@@ -205,33 +205,24 @@ function App() {
   if (!isJoined) {
     return (
       <div style={styles.container}>
-        <div style={styles.header}>
-          <h1>🕵️ CLUE-LESS</h1>
+        <h1>CLUE-LESS SKELETAL INCREMENT</h1>
+        <p>Architecture Demo: Client-Server Socket.IO Communication</p>
+
+        <div>
+          <h2>Join Game</h2>
           <p>
-            <strong>Architecture Demo:</strong> Client-Server Communication
-          </p>
-        </div>
-
-        <div style={styles.joinForm}>
-          <h2>Join Game (Basic Console Interface)</h2>
-
-          <div style={styles.formGroup}>
-            <label>Player Name:</label>
+            Player Name:{' '}
             <input
               type="text"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
-              style={styles.input}
             />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label>Character:</label>
+          </p>
+          <p>
+            Character:
             <select
               value={selectedCharacter}
               onChange={(e) => setSelectedCharacter(e.target.value)}
-              style={styles.input}
             >
               <option value="">Select character</option>
               {characters.map((char) => (
@@ -240,22 +231,13 @@ function App() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <button onClick={joinGame} style={styles.button}>
-            Join Game
-          </button>
+          </p>
+          <button onClick={joinGame}>Join Game</button>
         </div>
 
-        <div style={styles.logs}>
-          <h3>Connection Logs:</h3>
-          <div style={styles.logContainer}>
-            {logs.map((log, index) => (
-              <div key={index} style={styles.logEntry}>
-                {log}
-              </div>
-            ))}
-          </div>
+        <div>
+          <h3>Debug Logs:</h3>
+          <pre style={styles.debugLog}>{logs.join('\n')}</pre>
         </div>
       </div>
     );
@@ -267,34 +249,25 @@ function App() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h1>🕵️ CLUE-LESS</h1>
-        <div style={styles.headerInfo}>
-          <span>
-            <strong>Status:</strong> {gameState?.gamePhase}
-          </span>
-          <span>
-            <strong>Players:</strong>{' '}
-            {Object.keys(gameState?.players || {}).length}
-          </span>
-          <span>
-            <strong>You:</strong> {currentPlayer?.name} (
-            {currentPlayer?.character})
-          </span>
-          <span>
-            <strong>Location:</strong> {currentPlayer?.location}
-          </span>
-          {isMyTurn && <span style={styles.highlight}>🎯 YOUR TURN</span>}
-        </div>
-      </div>
+      <h1>CLUE-LESS SKELETAL INCREMENT</h1>
+      <p>
+        Status: {gameState?.gamePhase} | Players:{' '}
+        {Object.keys(gameState?.players || {}).length} | You:{' '}
+        {currentPlayer?.character} | Location: {currentPlayer?.location}
+      </p>
+      {isMyTurn && (
+        <p>
+          <strong>*** YOUR TURN ***</strong>
+        </p>
+      )}
 
-      <div style={styles.mainLayout}>
-        {/* Left Column - Game Controls */}
-        <div style={styles.leftColumn}>
-          <h3>🎮 Game Controls</h3>
+      <div style={styles.gameArea}>
+        {/* Basic Game Controls */}
+        <div style={styles.section}>
+          <h3>GAME CONTROLS</h3>
 
           {!gameState?.gameStarted && (
-            <div style={styles.readySection}>
+            <div>
               <p>
                 Players ready:{' '}
                 {
@@ -305,9 +278,7 @@ function App() {
                 /{Object.keys(gameState?.players || {}).length}
               </p>
               {!currentPlayer?.isReady && (
-                <button onClick={markReady} style={styles.button}>
-                  Mark Ready
-                </button>
+                <button onClick={markReady}>Mark Ready</button>
               )}
             </div>
           )}
@@ -316,17 +287,15 @@ function App() {
             <div>
               <h4>Available Moves:</h4>
               {availableMoves.length > 0 ? (
-                <div style={styles.moveButtons}>
+                <ul>
                   {availableMoves.map((move) => (
-                    <button
-                      key={move.id}
-                      onClick={() => makeMove(move.id)}
-                      style={styles.moveButton}
-                    >
-                      {move.name} ({move.type})
-                    </button>
+                    <li key={move.id}>
+                      <button onClick={() => makeMove(move.id)}>
+                        {move.name} ({move.type})
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
               ) : (
                 <p>No moves available</p>
               )}
@@ -334,178 +303,173 @@ function App() {
           )}
 
           {gameState?.gameStarted && !isMyTurn && (
-            <p style={styles.waitingText}>
+            <p>
               Waiting for {gameState?.players[gameState?.currentPlayer]?.name}'s
               turn...
             </p>
           )}
         </div>
 
-        {/* Center Column - Game Actions */}
-        <div style={styles.centerColumn}>
-          {gameState?.gameStarted && isMyTurn && (
-            <>
-              {/* Suggestion Form */}
-              <div style={styles.compactForm}>
-                <h4>🔍 Make Suggestion</h4>
-                <div style={styles.formRow}>
-                  <select
-                    style={styles.compactSelect}
-                    value={suggestionData.character}
-                    onChange={(e) =>
-                      setSuggestionData({
-                        ...suggestionData,
-                        character: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Character</option>
-                    {[
-                      'Miss Scarlet',
-                      'Colonel Mustard',
-                      'Mrs. White',
-                      'Mr. Green',
-                      'Mrs. Peacock',
-                      'Professor Plum',
-                    ].map((char) => (
-                      <option key={char} value={char}>
-                        {char}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    style={styles.compactSelect}
-                    value={suggestionData.weapon}
-                    onChange={(e) =>
-                      setSuggestionData({
-                        ...suggestionData,
-                        weapon: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Weapon</option>
-                    {weapons.map((weapon) => (
-                      <option key={weapon} value={weapon}>
-                        {weapon}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button onClick={makeSuggestion} style={styles.actionButton}>
-                  Suggest
-                </button>
-              </div>
+        {/* Suggestion/Accusation */}
+        {gameState?.gameStarted && isMyTurn && (
+          <div style={styles.section}>
+            <h3>ACTIONS</h3>
 
-              {/* Accusation Form */}
-              <div style={styles.compactForm}>
-                <h4>⚡ Make Accusation</h4>
-                <div style={styles.formRow}>
-                  <select
-                    style={styles.compactSelect}
-                    value={accusationData.character}
-                    onChange={(e) =>
-                      setAccusationData({
-                        ...accusationData,
-                        character: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Character</option>
-                    {[
-                      'Miss Scarlet',
-                      'Colonel Mustard',
-                      'Mrs. White',
-                      'Mr. Green',
-                      'Mrs. Peacock',
-                      'Professor Plum',
-                    ].map((char) => (
-                      <option key={char} value={char}>
-                        {char}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    style={styles.compactSelect}
-                    value={accusationData.weapon}
-                    onChange={(e) =>
-                      setAccusationData({
-                        ...accusationData,
-                        weapon: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Weapon</option>
-                    {weapons.map((weapon) => (
-                      <option key={weapon} value={weapon}>
-                        {weapon}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    style={styles.compactSelect}
-                    value={accusationData.room}
-                    onChange={(e) =>
-                      setAccusationData({
-                        ...accusationData,
-                        room: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Room</option>
-                    {rooms.map((room) => (
-                      <option key={room} value={room}>
-                        {room}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button onClick={makeAccusation} style={styles.warningButton}>
-                  Accuse (Risky!)
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+            <div>
+              <h4>Make Suggestion (current room):</h4>
+              <p>
+                Character:
+                <select
+                  value={suggestionData.character}
+                  onChange={(e) =>
+                    setSuggestionData({
+                      ...suggestionData,
+                      character: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select</option>
+                  {[
+                    'Miss Scarlet',
+                    'Colonel Mustard',
+                    'Mrs. White',
+                    'Mr. Green',
+                    'Mrs. Peacock',
+                    'Professor Plum',
+                  ].map((char) => (
+                    <option key={char} value={char}>
+                      {char}
+                    </option>
+                  ))}
+                </select>
+              </p>
+              <p>
+                Weapon:
+                <select
+                  value={suggestionData.weapon}
+                  onChange={(e) =>
+                    setSuggestionData({
+                      ...suggestionData,
+                      weapon: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select</option>
+                  {weapons.map((weapon) => (
+                    <option key={weapon} value={weapon}>
+                      {weapon}
+                    </option>
+                  ))}
+                </select>
+              </p>
+              <button onClick={makeSuggestion}>Make Suggestion</button>
+            </div>
 
-        {/* Right Column - Board State and Logs */}
-        <div style={styles.rightColumn}>
-          <h4>🗺️ Board State</h4>
-          <div style={styles.boardSection}>
-            <div style={styles.compactBoard}>
-              <h5>Rooms:</h5>
-              <div style={styles.roomList}>
-                {Object.entries(gameState?.board?.rooms || {}).map(
-                  ([roomId, room]) =>
-                    room.players.length > 0 && (
-                      <div key={roomId} style={styles.compactLocationEntry}>
-                        {room.name}: {room.players.join(', ')}
-                      </div>
-                    )
-                )}
-              </div>
-
-              <h5>Hallways:</h5>
-              <div style={styles.hallwayList}>
-                {Object.entries(gameState?.board?.hallways || {}).map(
-                  ([hallwayId, hallway]) =>
-                    hallway.player && (
-                      <div key={hallwayId} style={styles.compactLocationEntry}>
-                        {hallway.name}: {hallway.player}
-                      </div>
-                    )
-                )}
-              </div>
+            <div>
+              <h4>Make Accusation (WIN/LOSE):</h4>
+              <p>
+                Character:
+                <select
+                  value={accusationData.character}
+                  onChange={(e) =>
+                    setAccusationData({
+                      ...accusationData,
+                      character: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select</option>
+                  {[
+                    'Miss Scarlet',
+                    'Colonel Mustard',
+                    'Mrs. White',
+                    'Mr. Green',
+                    'Mrs. Peacock',
+                    'Professor Plum',
+                  ].map((char) => (
+                    <option key={char} value={char}>
+                      {char}
+                    </option>
+                  ))}
+                </select>
+              </p>
+              <p>
+                Weapon:
+                <select
+                  value={accusationData.weapon}
+                  onChange={(e) =>
+                    setAccusationData({
+                      ...accusationData,
+                      weapon: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select</option>
+                  {weapons.map((weapon) => (
+                    <option key={weapon} value={weapon}>
+                      {weapon}
+                    </option>
+                  ))}
+                </select>
+              </p>
+              <p>
+                Room:
+                <select
+                  value={accusationData.room}
+                  onChange={(e) =>
+                    setAccusationData({
+                      ...accusationData,
+                      room: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select</option>
+                  {rooms.map((room) => (
+                    <option key={room} value={room}>
+                      {room}
+                    </option>
+                  ))}
+                </select>
+              </p>
+              <button onClick={makeAccusation}>Make Accusation (FINAL)</button>
             </div>
           </div>
+        )}
 
-          <h4>📡 Activity Log</h4>
-          <div style={styles.compactLogContainer}>
-            {logs.slice(-8).map((log, index) => (
-              <div key={index} style={styles.compactLogEntry}>
-                {log}
-              </div>
-            ))}
+        {/* Game State Display */}
+        <div style={styles.section}>
+          <h3>BOARD STATE</h3>
+          <div>
+            <h4>Rooms with Players:</h4>
+            <ul>
+              {Object.entries(gameState?.board?.rooms || {}).map(
+                ([roomId, room]) =>
+                  room.players.length > 0 && (
+                    <li key={roomId}>
+                      {room.name}: {room.players.join(', ')}
+                    </li>
+                  )
+              )}
+            </ul>
+
+            <h4>Hallways with Players:</h4>
+            <ul>
+              {Object.entries(gameState?.board?.hallways || {}).map(
+                ([hallwayId, hallway]) =>
+                  hallway.player && (
+                    <li key={hallwayId}>
+                      {hallway.name}: {hallway.player}
+                    </li>
+                  )
+              )}
+            </ul>
           </div>
+        </div>
+
+        {/* Debug Logs */}
+        <div style={styles.section}>
+          <h3>DEBUG LOG</h3>
+          <pre style={styles.debugLog}>{logs.slice(-10).join('\n')}</pre>
         </div>
       </div>
     </div>
@@ -514,248 +478,34 @@ function App() {
 
 const styles = {
   container: {
-    maxWidth: '95vw',
+    maxWidth: '1200px',
     margin: '0 auto',
-    padding: '10px',
-    backgroundColor: '#1a1a1a',
-    color: '#ffffff',
+    padding: '20px',
     fontFamily: 'monospace',
+    backgroundColor: '#f5f5f5',
+    color: '#333333',
     minHeight: '100vh',
   },
-  header: {
-    textAlign: 'center',
-    marginBottom: '15px',
-    padding: '12px',
-    backgroundColor: '#2a2a2a',
-    borderRadius: '8px',
-  },
-  headerInfo: {
+  gameArea: {
     display: 'flex',
-    justifyContent: 'space-around',
     flexWrap: 'wrap',
-    marginTop: '8px',
-    fontSize: '16px',
-  },
-  mainLayout: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
     gap: '20px',
-    height: 'calc(100vh - 180px)',
-  },
-  leftColumn: {
-    backgroundColor: '#2a2a2a',
-    padding: '20px',
-    borderRadius: '8px',
-    overflow: 'auto',
-  },
-  centerColumn: {
-    backgroundColor: '#2a2a2a',
-    padding: '20px',
-    borderRadius: '8px',
-    overflow: 'auto',
-  },
-  rightColumn: {
-    backgroundColor: '#2a2a2a',
-    padding: '20px',
-    borderRadius: '8px',
-    overflow: 'auto',
-  },
-  readySection: {
-    backgroundColor: '#3a3a3a',
-    padding: '15px',
-    borderRadius: '6px',
-    marginBottom: '15px',
-    fontSize: '15px',
-  },
-  compactForm: {
-    backgroundColor: '#3a3a3a',
-    padding: '18px',
-    borderRadius: '6px',
-    marginBottom: '18px',
-  },
-  formRow: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '12px',
-  },
-  compactSelect: {
-    flex: 1,
-    padding: '10px',
-    backgroundColor: '#4a4a4a',
-    border: '1px solid #555',
-    borderRadius: '4px',
-    color: '#ffffff',
-    fontSize: '14px',
-  },
-  boardSection: {
-    marginBottom: '20px',
-  },
-  compactBoard: {
-    backgroundColor: '#3a3a3a',
-    padding: '15px',
-    borderRadius: '6px',
-  },
-  roomList: {
-    marginBottom: '15px',
-  },
-  hallwayList: {
-    marginBottom: '15px',
-  },
-  compactLocationEntry: {
-    padding: '6px 10px',
-    backgroundColor: '#4a4a4a',
-    margin: '4px 0',
-    borderRadius: '3px',
-    fontSize: '13px',
-  },
-  compactLogContainer: {
-    backgroundColor: '#1a1a1a',
-    padding: '12px',
-    borderRadius: '6px',
-    maxHeight: '250px',
-    overflowY: 'auto',
-    border: '1px solid #555',
-  },
-  compactLogEntry: {
-    padding: '4px 0',
-    fontSize: '12px',
-    color: '#cccccc',
-    borderBottom: '1px solid #333',
-  },
-  waitingText: {
-    textAlign: 'center',
-    color: '#888',
-    fontStyle: 'italic',
-    fontSize: '15px',
   },
   section: {
-    marginBottom: '20px',
+    flex: '1 1 300px',
+    border: '1px solid #ccc',
     padding: '15px',
-    backgroundColor: '#2a2a2a',
-    borderRadius: '8px',
+    backgroundColor: 'white',
+    color: '#222222',
   },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '15px',
-  },
-  card: {
-    backgroundColor: '#3a3a3a',
-    padding: '15px',
-    borderRadius: '8px',
-  },
-  joinForm: {
-    backgroundColor: '#2a2a2a',
-    padding: '30px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-  },
-  formGroup: {
-    marginBottom: '15px',
-  },
-  input: {
-    width: '100%',
+  debugLog: {
+    backgroundColor: '#f0f0f0',
+    color: '#000000',
     padding: '10px',
-    backgroundColor: '#3a3a3a',
-    border: '1px solid #555',
-    borderRadius: '4px',
-    color: '#ffffff',
-    marginTop: '5px',
-  },
-  select: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#3a3a3a',
-    border: '1px solid #555',
-    borderRadius: '4px',
-    color: '#ffffff',
-    marginTop: '5px',
-  },
-  button: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    padding: '12px 24px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    margin: '5px',
-  },
-  moveButtons: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  moveButton: {
-    backgroundColor: '#2196F3',
-    color: 'white',
-    padding: '12px 16px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    textAlign: 'left',
-    fontSize: '14px',
-  },
-  formSection: {
-    backgroundColor: '#3a3a3a',
-    padding: '20px',
-    borderRadius: '8px',
-    margin: '15px 0',
-  },
-  actionButton: {
-    backgroundColor: '#FF9800',
-    color: 'white',
-    padding: '12px 20px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    margin: '8px 0',
-    fontSize: '14px',
-  },
-  warningButton: {
-    backgroundColor: '#f44336',
-    color: 'white',
-    padding: '12px 20px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    margin: '8px 0',
-    fontSize: '14px',
-  },
-  highlight: {
-    color: '#ff6b6b',
-    fontWeight: 'bold',
-    fontSize: '16px',
-  },
-  boardInfo: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
-  },
-  column: {
-    backgroundColor: '#3a3a3a',
-    padding: '15px',
-    borderRadius: '8px',
-  },
-  locationEntry: {
-    padding: '5px',
-    backgroundColor: '#4a4a4a',
-    margin: '5px 0',
-    borderRadius: '4px',
-    fontSize: '14px',
-  },
-  logContainer: {
-    backgroundColor: '#1a1a1a',
-    padding: '15px',
-    borderRadius: '8px',
-    maxHeight: '200px',
-    overflowY: 'auto',
-    border: '1px solid #555',
-  },
-  logEntry: {
-    padding: '3px 0',
+    border: '1px solid #ddd',
+    height: '200px',
+    overflow: 'auto',
     fontSize: '12px',
-    color: '#cccccc',
-    borderBottom: '1px solid #333',
   },
 };
 
