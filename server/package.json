@@ -1,0 +1,21 @@
+{
+  "name": "clueless-server",
+  "version": "1.0.0",
+  "description": "Node.js server for Clue-Less board game",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": [
+    "clue",
+    "board-game",
+    "multiplayer"
+  ],
+  "author": "",
+  "license": "MIT"
+}
