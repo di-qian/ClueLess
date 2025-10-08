@@ -9,6 +9,7 @@ A simplified web-based version of the classic Clue board game, built with React 
 This skeletal increment focuses on establishing the foundational framework as outlined in the project plan:
 
 ### ✅ **Architecture Components Implemented:**
+
 - **Client-Server Architecture**: Networked gameplay using Socket.IO
 - **Communication Protocol**: Basic message passing between client and server
 - **Core Data Structures**: Players, rooms, weapons, and grid layout
@@ -19,18 +20,21 @@ This skeletal increment focuses on establishing the foundational framework as ou
 ### 🎯 **Key Architectural Elements:**
 
 **Data Structures:**
+
 - 9 rooms in 3×3 grid layout
 - 12 hallway nodes connecting adjacent rooms
 - Player objects with location tracking
 - Game state management
 
 **Communication Protocol:**
+
 - `joinGame`: Player registration and character selection
 - `playerReady`: Ready state management
 - `makeMove`: Basic movement between locations
 - `gameStateUpdate`: Real-time state synchronization
 
 **Game Flow:**
+
 - Player registration with character assignment
 - Turn-based movement system
 - State synchronization across all clients
@@ -38,34 +42,41 @@ This skeletal increment focuses on establishing the foundational framework as ou
 
 ## 🚀 **Running the Skeletal Increment**
 
-### **Prerequisites:** 
+### **Prerequisites:**
+
 Node.js (v14 or higher) must be installed.
 
 ### **Quick Start with VS Code Tasks:**
+
 1. Open VS Code Command Palette (`Ctrl+Shift+P`)
 2. Run task: "Install All Dependencies"
 3. Run task: "Demo Skeletal Increment"
 
 ### **Manual Setup:**
+
 1. Install server dependencies:
+
    ```bash
    cd server
    npm install
    ```
 
 2. Install client dependencies:
+
    ```bash
-   cd client  
+   cd client
    npm install
    ```
 
 3. Start skeletal server:
+
    ```bash
    cd server
-   npm run skeletal
+   npm start
    ```
 
 4. Start client:
+
    ```bash
    cd client
    npm start
@@ -74,6 +85,7 @@ Node.js (v14 or higher) must be installed.
 5. Access skeletal demo at: `http://localhost:3000?mode=skeletal`
 
 ### **Architecture Demo URLs:**
+
 - **Skeletal Console Interface**: `http://localhost:3000?mode=skeletal`
 - **Full GUI Version**: `http://localhost:3000` (for comparison)
 - **Server Status**: `http://localhost:3001/status`
@@ -81,6 +93,7 @@ Node.js (v14 or higher) must be installed.
 ## 🧪 **Testing the Architecture**
 
 ### **Multi-Client Testing:**
+
 1. Open multiple browser windows/tabs
 2. Navigate to `http://localhost:3000?mode=skeletal` in each
 3. Join as different characters
@@ -88,6 +101,7 @@ Node.js (v14 or higher) must be installed.
 5. Test turn-based movement system
 
 ### **Console Logging:**
+
 - Server logs all message passing events
 - Client displays communication log
 - Real-time board state visualization
@@ -108,6 +122,7 @@ Node.js (v14 or higher) must be installed.
 ## 🔄 **Next Increment: Minimal Features**
 
 The next phase will build upon this architecture to add:
+
 - Player registration with server character assignment
 - Complete movement logic following Clue-Less rules
 - Suggestion and accusation mechanics
@@ -134,6 +149,7 @@ The next phase will build upon this architecture to add:
 ## 🎯 **Architecture Demonstration**
 
 This skeletal increment successfully demonstrates:
+
 1. **Networked Architecture**: Client-server communication via Socket.IO
 2. **Data Structure Design**: Proper representation of game board and players
 3. **Message Protocol**: Clear communication patterns between components

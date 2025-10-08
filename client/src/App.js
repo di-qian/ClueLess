@@ -11,9 +11,7 @@ function App() {
   const [playerName, setPlayerName] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState('');
 
-  // Suggestion and Accusation forms
-  const [showSuggestionForm, setShowSuggestionForm] = useState(false);
-  const [showAccusationForm, setShowAccusationForm] = useState(false);
+  // Suggestion and Accusation forms - removed unused show state variables
   const [suggestionData, setSuggestionData] = useState({
     character: '',
     weapon: '',
@@ -155,7 +153,6 @@ function App() {
         `Making suggestion: ${suggestionData.character} with ${suggestionData.weapon}`
       );
       setSuggestionData({ character: '', weapon: '' });
-      setShowSuggestionForm(false);
     }
   };
 
@@ -170,7 +167,6 @@ function App() {
         `Making accusation: ${accusationData.character} with ${accusationData.weapon} in ${accusationData.room}`
       );
       setAccusationData({ character: '', weapon: '', room: '' });
-      setShowAccusationForm(false);
     }
   };
 
@@ -273,246 +269,243 @@ function App() {
     <div style={styles.container}>
       <div style={styles.header}>
         <h1>🕵️ CLUE-LESS</h1>
-        <p>
-          <strong>Status:</strong> {gameState?.gamePhase} |{' '}
-          <strong>Players:</strong>{' '}
-          {Object.keys(gameState?.players || {}).length}
-        </p>
-      </div>
-
-      {/* Player Status */}
-      <div style={styles.section}>
-        <h2>👥 Player Status</h2>
-        <p>
-          <strong>You:</strong> {currentPlayer?.name} (
-          {currentPlayer?.character})
-        </p>
-        <p>
-          <strong>Location:</strong> {currentPlayer?.location}
-        </p>
-        {isMyTurn && <p style={styles.highlight}>🎯 YOUR TURN</p>}
-      </div>
-
-      {/* Game Controls */}
-      <div style={styles.section}>
-        <h2>🎮 Game Controls</h2>
-
-        {!gameState?.gameStarted && (
-          <div>
-            <p>
-              Players ready:{' '}
-              {
-                Object.values(gameState?.players || {}).filter((p) => p.isReady)
-                  .length
-              }
-              /{Object.keys(gameState?.players || {}).length}
-            </p>
-            {!currentPlayer?.isReady && (
-              <button onClick={markReady} style={styles.button}>
-                Mark Ready
-              </button>
-            )}
-          </div>
-        )}
-
-        {gameState?.gameStarted && isMyTurn && (
-          <div>
-            <h3>Available Moves:</h3>
-            {availableMoves.length > 0 ? (
-              <div style={styles.moveButtons}>
-                {availableMoves.map((move) => (
-                  <button
-                    key={move.id}
-                    onClick={() => makeMove(move.id)}
-                    style={styles.moveButton}
-                  >
-                    Move to {move.name} ({move.type})
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p>No moves available</p>
-            )}
-
-            {/* Suggestion Form */}
-            <div style={styles.formSection}>
-              <h3>Make a Suggestion:</h3>
-              <div style={styles.formGroup}>
-                <label>Suspect:</label>
-                <select
-                  style={styles.select}
-                  value={suggestionData.character}
-                  onChange={(e) =>
-                    setSuggestionData({
-                      ...suggestionData,
-                      character: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Character</option>
-                  {[
-                    'Miss Scarlet',
-                    'Colonel Mustard',
-                    'Mrs. White',
-                    'Mr. Green',
-                    'Mrs. Peacock',
-                    'Professor Plum',
-                  ].map((char) => (
-                    <option key={char} value={char}>
-                      {char}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={styles.formGroup}>
-                <label>Weapon:</label>
-                <select
-                  style={styles.select}
-                  value={suggestionData.weapon}
-                  onChange={(e) =>
-                    setSuggestionData({
-                      ...suggestionData,
-                      weapon: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Weapon</option>
-                  {weapons.map((weapon) => (
-                    <option key={weapon} value={weapon}>
-                      {weapon}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button onClick={makeSuggestion} style={styles.actionButton}>
-                Make Suggestion
-              </button>
-            </div>
-
-            {/* Accusation Form */}
-            <div style={styles.formSection}>
-              <h3>Make an Accusation:</h3>
-              <div style={styles.formGroup}>
-                <label>Suspect:</label>
-                <select
-                  style={styles.select}
-                  value={accusationData.character}
-                  onChange={(e) =>
-                    setAccusationData({
-                      ...accusationData,
-                      character: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Character</option>
-                  {[
-                    'Miss Scarlet',
-                    'Colonel Mustard',
-                    'Mrs. White',
-                    'Mr. Green',
-                    'Mrs. Peacock',
-                    'Professor Plum',
-                  ].map((char) => (
-                    <option key={char} value={char}>
-                      {char}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={styles.formGroup}>
-                <label>Weapon:</label>
-                <select
-                  style={styles.select}
-                  value={accusationData.weapon}
-                  onChange={(e) =>
-                    setAccusationData({
-                      ...accusationData,
-                      weapon: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Weapon</option>
-                  {weapons.map((weapon) => (
-                    <option key={weapon} value={weapon}>
-                      {weapon}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={styles.formGroup}>
-                <label>Room:</label>
-                <select
-                  style={styles.select}
-                  value={accusationData.room}
-                  onChange={(e) =>
-                    setAccusationData({
-                      ...accusationData,
-                      room: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Room</option>
-                  {rooms.map((room) => (
-                    <option key={room} value={room}>
-                      {room}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button onClick={makeAccusation} style={styles.warningButton}>
-                Make Accusation (Risky!)
-              </button>
-            </div>
-          </div>
-        )}
-
-        {gameState?.gameStarted && !isMyTurn && (
-          <p>
-            Waiting for {gameState?.players[gameState?.currentPlayer]?.name}'s
-            turn...
-          </p>
-        )}
-      </div>
-
-      {/* Board Visualization */}
-      <div style={styles.section}>
-        <h2>🗺️ Board State (Console View)</h2>
-        <div style={styles.boardInfo}>
-          <div style={styles.column}>
-            <h4>Rooms with Players:</h4>
-            {Object.entries(gameState?.board?.rooms || {}).map(
-              ([roomId, room]) =>
-                room.players.length > 0 && (
-                  <div key={roomId} style={styles.locationEntry}>
-                    {room.name}: [{room.players.join(', ')}]
-                  </div>
-                )
-            )}
-          </div>
-
-          <div style={styles.column}>
-            <h4>Occupied Hallways:</h4>
-            {Object.entries(gameState?.board?.hallways || {}).map(
-              ([hallwayId, hallway]) =>
-                hallway.player && (
-                  <div key={hallwayId} style={styles.locationEntry}>
-                    {hallway.name}: {hallway.player}
-                  </div>
-                )
-            )}
-          </div>
+        <div style={styles.headerInfo}>
+          <span>
+            <strong>Status:</strong> {gameState?.gamePhase}
+          </span>
+          <span>
+            <strong>Players:</strong>{' '}
+            {Object.keys(gameState?.players || {}).length}
+          </span>
+          <span>
+            <strong>You:</strong> {currentPlayer?.name} (
+            {currentPlayer?.character})
+          </span>
+          <span>
+            <strong>Location:</strong> {currentPlayer?.location}
+          </span>
+          {isMyTurn && <span style={styles.highlight}>🎯 YOUR TURN</span>}
         </div>
       </div>
 
-      {/* Communication Logs */}
-      <div style={styles.section}>
-        <h2>📡 Communication Log</h2>
-        <div style={styles.logContainer}>
-          {logs.slice(-10).map((log, index) => (
-            <div key={index} style={styles.logEntry}>
-              {log}
+      <div style={styles.mainLayout}>
+        {/* Left Column - Game Controls */}
+        <div style={styles.leftColumn}>
+          <h3>🎮 Game Controls</h3>
+
+          {!gameState?.gameStarted && (
+            <div style={styles.readySection}>
+              <p>
+                Players ready:{' '}
+                {
+                  Object.values(gameState?.players || {}).filter(
+                    (p) => p.isReady
+                  ).length
+                }
+                /{Object.keys(gameState?.players || {}).length}
+              </p>
+              {!currentPlayer?.isReady && (
+                <button onClick={markReady} style={styles.button}>
+                  Mark Ready
+                </button>
+              )}
             </div>
-          ))}
+          )}
+
+          {gameState?.gameStarted && isMyTurn && (
+            <div>
+              <h4>Available Moves:</h4>
+              {availableMoves.length > 0 ? (
+                <div style={styles.moveButtons}>
+                  {availableMoves.map((move) => (
+                    <button
+                      key={move.id}
+                      onClick={() => makeMove(move.id)}
+                      style={styles.moveButton}
+                    >
+                      {move.name} ({move.type})
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p>No moves available</p>
+              )}
+            </div>
+          )}
+
+          {gameState?.gameStarted && !isMyTurn && (
+            <p style={styles.waitingText}>
+              Waiting for {gameState?.players[gameState?.currentPlayer]?.name}'s
+              turn...
+            </p>
+          )}
+        </div>
+
+        {/* Center Column - Game Actions */}
+        <div style={styles.centerColumn}>
+          {gameState?.gameStarted && isMyTurn && (
+            <>
+              {/* Suggestion Form */}
+              <div style={styles.compactForm}>
+                <h4>🔍 Make Suggestion</h4>
+                <div style={styles.formRow}>
+                  <select
+                    style={styles.compactSelect}
+                    value={suggestionData.character}
+                    onChange={(e) =>
+                      setSuggestionData({
+                        ...suggestionData,
+                        character: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Character</option>
+                    {[
+                      'Miss Scarlet',
+                      'Colonel Mustard',
+                      'Mrs. White',
+                      'Mr. Green',
+                      'Mrs. Peacock',
+                      'Professor Plum',
+                    ].map((char) => (
+                      <option key={char} value={char}>
+                        {char}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    style={styles.compactSelect}
+                    value={suggestionData.weapon}
+                    onChange={(e) =>
+                      setSuggestionData({
+                        ...suggestionData,
+                        weapon: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Weapon</option>
+                    {weapons.map((weapon) => (
+                      <option key={weapon} value={weapon}>
+                        {weapon}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button onClick={makeSuggestion} style={styles.actionButton}>
+                  Suggest
+                </button>
+              </div>
+
+              {/* Accusation Form */}
+              <div style={styles.compactForm}>
+                <h4>⚡ Make Accusation</h4>
+                <div style={styles.formRow}>
+                  <select
+                    style={styles.compactSelect}
+                    value={accusationData.character}
+                    onChange={(e) =>
+                      setAccusationData({
+                        ...accusationData,
+                        character: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Character</option>
+                    {[
+                      'Miss Scarlet',
+                      'Colonel Mustard',
+                      'Mrs. White',
+                      'Mr. Green',
+                      'Mrs. Peacock',
+                      'Professor Plum',
+                    ].map((char) => (
+                      <option key={char} value={char}>
+                        {char}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    style={styles.compactSelect}
+                    value={accusationData.weapon}
+                    onChange={(e) =>
+                      setAccusationData({
+                        ...accusationData,
+                        weapon: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Weapon</option>
+                    {weapons.map((weapon) => (
+                      <option key={weapon} value={weapon}>
+                        {weapon}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    style={styles.compactSelect}
+                    value={accusationData.room}
+                    onChange={(e) =>
+                      setAccusationData({
+                        ...accusationData,
+                        room: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Room</option>
+                    {rooms.map((room) => (
+                      <option key={room} value={room}>
+                        {room}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button onClick={makeAccusation} style={styles.warningButton}>
+                  Accuse (Risky!)
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right Column - Board State and Logs */}
+        <div style={styles.rightColumn}>
+          <h4>🗺️ Board State</h4>
+          <div style={styles.boardSection}>
+            <div style={styles.compactBoard}>
+              <h5>Rooms:</h5>
+              <div style={styles.roomList}>
+                {Object.entries(gameState?.board?.rooms || {}).map(
+                  ([roomId, room]) =>
+                    room.players.length > 0 && (
+                      <div key={roomId} style={styles.compactLocationEntry}>
+                        {room.name}: {room.players.join(', ')}
+                      </div>
+                    )
+                )}
+              </div>
+
+              <h5>Hallways:</h5>
+              <div style={styles.hallwayList}>
+                {Object.entries(gameState?.board?.hallways || {}).map(
+                  ([hallwayId, hallway]) =>
+                    hallway.player && (
+                      <div key={hallwayId} style={styles.compactLocationEntry}>
+                        {hallway.name}: {hallway.player}
+                      </div>
+                    )
+                )}
+              </div>
+            </div>
+          </div>
+
+          <h4>📡 Activity Log</h4>
+          <div style={styles.compactLogContainer}>
+            {logs.slice(-8).map((log, index) => (
+              <div key={index} style={styles.compactLogEntry}>
+                {log}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -521,9 +514,9 @@ function App() {
 
 const styles = {
   container: {
-    maxWidth: '1000px',
+    maxWidth: '95vw',
     margin: '0 auto',
-    padding: '20px',
+    padding: '10px',
     backgroundColor: '#1a1a1a',
     color: '#ffffff',
     fontFamily: 'monospace',
@@ -531,14 +524,113 @@ const styles = {
   },
   header: {
     textAlign: 'center',
-    marginBottom: '30px',
-    padding: '20px',
+    marginBottom: '15px',
+    padding: '12px',
     backgroundColor: '#2a2a2a',
     borderRadius: '8px',
   },
-  section: {
-    marginBottom: '30px',
+  headerInfo: {
+    display: 'flex',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    marginTop: '8px',
+    fontSize: '16px',
+  },
+  mainLayout: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gap: '20px',
+    height: 'calc(100vh - 180px)',
+  },
+  leftColumn: {
+    backgroundColor: '#2a2a2a',
     padding: '20px',
+    borderRadius: '8px',
+    overflow: 'auto',
+  },
+  centerColumn: {
+    backgroundColor: '#2a2a2a',
+    padding: '20px',
+    borderRadius: '8px',
+    overflow: 'auto',
+  },
+  rightColumn: {
+    backgroundColor: '#2a2a2a',
+    padding: '20px',
+    borderRadius: '8px',
+    overflow: 'auto',
+  },
+  readySection: {
+    backgroundColor: '#3a3a3a',
+    padding: '15px',
+    borderRadius: '6px',
+    marginBottom: '15px',
+    fontSize: '15px',
+  },
+  compactForm: {
+    backgroundColor: '#3a3a3a',
+    padding: '18px',
+    borderRadius: '6px',
+    marginBottom: '18px',
+  },
+  formRow: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '12px',
+  },
+  compactSelect: {
+    flex: 1,
+    padding: '10px',
+    backgroundColor: '#4a4a4a',
+    border: '1px solid #555',
+    borderRadius: '4px',
+    color: '#ffffff',
+    fontSize: '14px',
+  },
+  boardSection: {
+    marginBottom: '20px',
+  },
+  compactBoard: {
+    backgroundColor: '#3a3a3a',
+    padding: '15px',
+    borderRadius: '6px',
+  },
+  roomList: {
+    marginBottom: '15px',
+  },
+  hallwayList: {
+    marginBottom: '15px',
+  },
+  compactLocationEntry: {
+    padding: '6px 10px',
+    backgroundColor: '#4a4a4a',
+    margin: '4px 0',
+    borderRadius: '3px',
+    fontSize: '13px',
+  },
+  compactLogContainer: {
+    backgroundColor: '#1a1a1a',
+    padding: '12px',
+    borderRadius: '6px',
+    maxHeight: '250px',
+    overflowY: 'auto',
+    border: '1px solid #555',
+  },
+  compactLogEntry: {
+    padding: '4px 0',
+    fontSize: '12px',
+    color: '#cccccc',
+    borderBottom: '1px solid #333',
+  },
+  waitingText: {
+    textAlign: 'center',
+    color: '#888',
+    fontStyle: 'italic',
+    fontSize: '15px',
+  },
+  section: {
+    marginBottom: '20px',
+    padding: '15px',
     backgroundColor: '#2a2a2a',
     borderRadius: '8px',
   },
@@ -596,11 +688,12 @@ const styles = {
   moveButton: {
     backgroundColor: '#2196F3',
     color: 'white',
-    padding: '10px 15px',
+    padding: '12px 16px',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
     textAlign: 'left',
+    fontSize: '14px',
   },
   formSection: {
     backgroundColor: '#3a3a3a',
@@ -611,25 +704,27 @@ const styles = {
   actionButton: {
     backgroundColor: '#FF9800',
     color: 'white',
-    padding: '10px 20px',
+    padding: '12px 20px',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    margin: '10px 0',
+    margin: '8px 0',
+    fontSize: '14px',
   },
   warningButton: {
     backgroundColor: '#f44336',
     color: 'white',
-    padding: '10px 20px',
+    padding: '12px 20px',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    margin: '10px 0',
+    margin: '8px 0',
+    fontSize: '14px',
   },
   highlight: {
     color: '#ff6b6b',
     fontWeight: 'bold',
-    fontSize: '18px',
+    fontSize: '16px',
   },
   boardInfo: {
     display: 'grid',
