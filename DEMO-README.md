@@ -22,7 +22,7 @@ node skeletal-server.js
 
 Open `skeletal-client.html` in multiple browser tabs to test multi-client messaging.
 
-## 📡 Demo Features
+## Demo Features
 
 ### **Subsystem Communication**
 
@@ -44,7 +44,7 @@ Open `skeletal-client.html` in multiple browser tabs to test multi-client messag
 - `GET /api/demo/messages` - Message log
 - `POST /api/demo/simulate-action` - Simulate inter-subsystem communication
 
-## 🎬 Demo Flow
+## Demo Flow
 
 1. **Architecture Overview** - Explain Server/Client/Network tiers
 2. **System Initialization** - Show architecture component startup

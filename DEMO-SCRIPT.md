@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 TEAM ROLES
+## TEAM ROLES
 
 ### **Member 1: Introduction & Architecture Overview (0:00-2:30)**
 
@@ -42,7 +42,7 @@
 
 ---
 
-## 🚀 DEMO SETUP (5 minutes before presentation)
+## DEMO SETUP (5 minutes before presentation)
 
 ### **Prerequisites:**
 
@@ -58,7 +58,7 @@
 
 ---
 
-## 🎬 DEMO SCRIPT (10 minutes - Remote Team Format)
+## DEMO SCRIPT (10 minutes - Remote Team Format)
 
 ### **MEMBER 1: Introduction & Architecture Overview (0:00-2:30)**
 
@@ -195,4 +195,3 @@ _"This messaging foundation enables our full Clue-Less implementation:"_
 
 **[Closing Statement]**
 _"Thank you for watching our DevDynasty skeletal increment demonstration. This proven messaging architecture provides the scalable foundation for our complete Clue-Less game implementation."_---
-

@@ -275,20 +275,20 @@ server.listen(PORT, () => {
   console.log('=====================================');
   console.log('   CLUE-LESS MESSAGING DEMO');
   console.log('=====================================');
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log('📡 SRS Section 4.1 Architecture initialized:');
+  console.log(`Server running on port ${PORT}`);
+  console.log('SRS Section 4.1 Architecture initialized:');
   console.log('   ✓ Server: Core logic and rule enforcement');
   console.log('   ✓ Network: Socket.IO communication layer');
   console.log('   ✓ Client: Web-based GUI (connect via browser)');
   console.log('');
-  console.log('🔗 Demo endpoints:');
-  console.log(`   📊 Status: http://localhost:${PORT}/api/demo/status`);
-  console.log(`   📝 Messages: http://localhost:${PORT}/api/demo/messages`);
+  console.log('Demo endpoints:');
+  console.log(`   Status: http://localhost:${PORT}/api/demo/status`);
+  console.log(`   Messages: http://localhost:${PORT}/api/demo/messages`);
   console.log(
-    `   ⚡ Simulate: POST http://localhost:${PORT}/api/demo/simulate-action`
+    `   Simulate: POST http://localhost:${PORT}/api/demo/simulate-action`
   );
   console.log('');
-  console.log('🎯 Socket.IO Events:');
+  console.log('Socket.IO Events:');
   console.log('   join_game → game_joined');
   console.log('   game_action → action_processed');
   console.log('   get_game_state → game_state_update');
