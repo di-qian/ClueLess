@@ -24,6 +24,7 @@ class GameManager {
       players: new Map(),
       currentTurn: null,
       messageLog: [],
+      unavailableCharacters: new Set(), // Track unavailable characters for the session
     };
     console.log(
       '[SERVER] Core logic initialized with Game ID:',
@@ -32,6 +33,10 @@ class GameManager {
   }
 
   addPlayer(playerId, playerData) {
+    // Prevent joining with unavailable character
+    if (this.gameState.unavailableCharacters.has(playerData.character)) {
+      return { success: false, error: `Character '${playerData.character}' is already taken.` };
+    }
     console.log('[SERVER] Adding player:', playerId, playerData);
     this.gameState.players.set(playerId, {
       id: playerId,
@@ -39,6 +44,7 @@ class GameManager {
       character: playerData.character,
       joinedAt: new Date().toISOString(),
     });
+    this.gameState.unavailableCharacters.add(playerData.character); // Mark as unavailable for session
     this.logMessage(
       `Player ${playerData.name} joined as ${playerData.character}`
     );
@@ -50,6 +56,7 @@ class GameManager {
     const player = this.gameState.players.get(playerId);
     if (player) {
       this.gameState.players.delete(playerId);
+      // Do NOT remove character from unavailableCharacters (once taken, always taken for session)
       this.logMessage(`Player ${player.name} left the game`);
     }
   }
@@ -102,6 +109,12 @@ class CommunicationManager {
 
     // Message: Client Registration
     socket.on('join_game', (playerData) => {
+      // Validate player
+      const validation = playerManager.validatePlayer(playerData, gameManager);
+      if (!validation.valid) {
+        socket.emit('game_joined', { success: false, error: validation.error });
+        return;
+      }
       console.log(
         '[NETWORK] Received JOIN_GAME message, routing to server:',
         playerData
@@ -112,12 +125,14 @@ class CommunicationManager {
       socket.emit('game_joined', result);
 
       // Broadcast: Notify other players
-      socket.broadcast.emit('player_joined', {
-        player: this.gameManager.gameState.players.get(socket.id),
-      });
+      if (result.success) {
+        socket.broadcast.emit('player_joined', {
+          player: this.gameManager.gameState.players.get(socket.id),
+        });
 
-      // Update all clients with new game state
-      this.broadcastGameState();
+        // Update all clients with new game state
+        this.broadcastGameState();
+      }
     });
 
     // Message: Game Action
@@ -192,7 +207,7 @@ class PlayerManager {
     );
   }
 
-  validatePlayer(playerData) {
+  validatePlayer(playerData, gameManager) {
     console.log('[SERVER] Validating player data:', playerData);
     if (!playerData.name || !playerData.character) {
       return { valid: false, error: 'Name and character required' };
@@ -200,15 +215,20 @@ class PlayerManager {
     if (!this.availableCharacters.includes(playerData.character)) {
       return { valid: false, error: 'Invalid character selection' };
     }
+    // Check if character is already taken for the session
+    if (gameManager.gameState.unavailableCharacters.has(playerData.character)) {
+      return { valid: false, error: `Character '${playerData.character}' is already taken.` };
+    }
     return { valid: true };
   }
 
   getAvailableCharacters(gameManager) {
+    // Only show characters not in unavailableCharacters
     const usedCharacters = Array.from(
       gameManager.gameState.players.values()
     ).map((p) => p.character);
     return this.availableCharacters.filter(
-      (char) => !usedCharacters.includes(char)
+      (char) => !gameManager.gameState.unavailableCharacters.has(char)
     );
   }
 }
