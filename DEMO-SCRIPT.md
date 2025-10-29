@@ -139,11 +139,21 @@ _"This completes the technical demonstration. Now Member 3 will analyze the arch
 **[PowerPoint with Screenshots]**
 
 **Slide 1: Message Flow Analysis** (Require Screenshots)
-_"Let's analyze the messaging patterns we just observed in the technical demo."_
+_"Let's analyze the messaging patterns we just observed, which implement the interfaces defined in SRS Section 4.3:"_
 
-- **Client-to-Server:** User actions → Network layer → Server logic and rule enforcement
-- **Server-to-Client:** Game state updates → Network layer → All connected clients
-- **Real-time Synchronization:** WebSocket connections maintain consistent game state across all players
+**SRS Section 4.3 Message Types Demonstrated:**
+
+- **Client → Server: Move Request** - Player move attempts routed through Network layer to Server validation
+- **Client → Server: Suggestion/Accusation** - Player guesses sent via Network layer for Server processing
+- **Server → All Clients: Update State** - Broadcast new game state through Network layer to all connected clients
+- **Server → Single Client: Prompt Disprove** - Architecture supports targeted messaging (to be implemented in future increments)
+- **Server → All Clients: End of Game** - Winner declaration broadcast via Network layer to all players
+
+**Architecture Implementation:**
+
+- **Network Layer (Socket.IO):** Handles all message routing and real-time communication per SRS 4.3
+- **Server Subsystem:** Processes messages and enforces game rules as specified
+- **Client Subsystem:** Sends requests and receives updates through defined interfaces
 
 **Slide 2: Architecture Benefits**
 _"This three-tier architecture provides key advantages:"_
@@ -153,15 +163,13 @@ _"This three-tier architecture provides key advantages:"_
 - **Web-based Portability:** Runs in modern browsers per SRS Section 5.4 portability requirements
 - **Scalable Design:** Supports up to 6 concurrent players per SRS Section 5.1
 
-**Slide 3: SRS Compliance Validation**
-_"Our skeletal increment demonstrates architecture that will support all SRS use cases:"_
+**Slide 3: Error Handling & System Resilience** (With Screen Captures)
+_"Our implementation includes robust error handling mechanisms demonstrated in Member 2's live demo:"_
 
-- ✅ **UC-01 Join Game:** Client-server authentication and lobby management
-- ✅ **UC-06 Notify Players:** Real-time state synchronization via WebSockets
-- ✅ **Section 4.1 Architecture:** Three-tier Server/Client/Network implementation
-- ✅ **Section 5 Non-Functional:** Performance, reliability, and portability requirements
+- **Connection Management:** [Screenshot: Client disconnect cleanup messages] - Graceful handling of client disconnections with automatic cleanup and notification to remaining clients
+- **Message Validation:** [Screenshot: Server logs showing validation] - Server-side validation prevents invalid game actions, malformed requests, and duplicate character selection
 
-_"Now Member 4 will conclude with our success metrics and future roadmap."_
+_"This comprehensive error handling ensures system reliability. Now Member 4 will conclude with our success metrics and future roadmap."_
 
 ---
 
