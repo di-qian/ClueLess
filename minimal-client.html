@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clue-Less Minimal Demo</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 10px;
+        background: #f0f0f0;
+        font-size: 16px;
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: 350px 1fr 300px;
+        gap: 15px;
+        height: 95vh;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 10px;
+      }
+
+      .panel {
+        background: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        overflow: auto;
+      }
+
+      h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        background: #e0e0e0;
+        padding: 5px;
+        text-align: center;
+      }
+
+      h3 {
+        margin: 10px 0 5px 0;
+        font-size: 16px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 2px;
+      }
+
+      .status {
+        padding: 5px;
+        margin: 5px 0;
+        border-radius: 3px;
+        text-align: center;
+        font-size: 14px;
+      }
+      .status.connected {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status.disconnected {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 6px;
+        margin: 3px 0;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background: #007cba;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        margin: 2px;
+        font-size: 14px;
+        border-radius: 2px;
+      }
+      button:hover {
+        background: #005a87;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .turn-indicator {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 10px;
+        margin: 5px 0;
+        text-align: center;
+        font-size: 15px;
+        font-weight: bold;
+      }
+
+      .turn-indicator.your-turn {
+        background: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+
+      .player-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 8px;
+        font-size: 13px;
+      }
+
+      .player-item {
+        margin: 3px 0;
+        padding: 3px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+      }
+
+      .player-item.eliminated {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .game-log {
+        height: 100%;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 8px;
+        background: #f9f9f9;
+        font-size: 14px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+
+      .action-group {
+        margin: 8px 0;
+        padding: 5px;
+        border: 1px solid #e0e0e0;
+        background: #f8f9fa;
+      }
+
+      .action-group h4 {
+        margin: 0 0 5px 0;
+        font-size: 15px;
+        color: #333;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 5px;
+        margin: 5px 0;
+      }
+
+      .disabled-section {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Left Panel: Game Controls -->
+      <div class="panel">
+        <h2>CLUE-LESS MINIMAL DEMO</h2>
+
+        <div id="connectionStatus" class="status disconnected">
+          Disconnected
+        </div>
+
+        <!-- Join Game Section -->
+        <div id="joinSection">
+          <h3>Join Game</h3>
+          <input type="text" id="playerName" placeholder="Enter your name" />
+          <select id="characterSelect">
+            <option value="">Select Character</option>
+            <option value="Miss Scarlet">Miss Scarlet</option>
+            <option value="Colonel Mustard">Colonel Mustard</option>
+            <option value="Mrs. White">Mrs. White</option>
+            <option value="Mr. Green">Mr. Green</option>
+            <option value="Mrs. Peacock">Mrs. Peacock</option>
+            <option value="Professor Plum">Professor Plum</option>
+          </select>
+          <button onclick="connectAndJoin()">Connect & Join</button>
+        </div>
+
+        <!-- Game Actions Section -->
+        <div id="gameActions" class="disabled-section">
+          <div id="turnIndicator" class="turn-indicator">
+            Waiting for game...
+          </div>
+
+          <!-- Movement -->
+          <div class="action-group">
+            <h4>Movement</h4>
+            <select id="locationSelect">
+              <option value="">Select destination...</option>
+            </select>
+            <button onclick="makeMove()" id="moveBtn" disabled>Move</button>
+          </div>
+
+          <!-- Suggestions -->
+          <div class="action-group">
+            <h4>Make Suggestion</h4>
+            <select id="suspectSelect">
+              <option value="">Select suspect...</option>
+            </select>
+            <select id="weaponSelect">
+              <option value="">Select weapon...</option>
+            </select>
+            <button onclick="makeSuggestion()" id="suggestBtn" disabled>
+              Suggest
+            </button>
+          </div>
+
+          <!-- Accusations -->
+          <div class="action-group">
+            <h4>Make Accusation</h4>
+            <select id="accuseSuspect">
+              <option value="">Suspect...</option>
+            </select>
+            <select id="accuseWeapon">
+              <option value="">Weapon...</option>
+            </select>
+            <select id="accuseRoom">
+              <option value="">Room...</option>
+            </select>
+            <button onclick="makeAccusation()" id="accuseBtn" disabled>
+              Accuse
+            </button>
+          </div>
+
+          <!-- Suggestion Response -->
+          <div
+            class="action-group"
+            id="suggestionResponse"
+            style="display: none"
+          >
+            <h4>Respond to Suggestion</h4>
+            <div
+              id="suggestionDetails"
+              style="
+                margin-bottom: 10px;
+                padding: 8px;
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                font-size: 13px;
+              "
+            ></div>
+            <select id="cardToShow">
+              <option value="">Select card to show...</option>
+            </select>
+            <div class="button-row">
+              <button onclick="showCard()" id="showCardBtn">Show Card</button>
+              <button onclick="cannotDisprove()" id="cannotDisproveBtn">
+                Cannot Disprove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Panel: Game Log -->
+      <div class="panel">
+        <h2>Game Activity Log</h2>
+        <div class="game-log" id="gameLog">
+          Clue-Less Minimal Increment initialized. Ready for players to join...
+          This demonstration focuses on core game functionality: - Player
+          joining and character selection - Turn-based game management -
+          Character movement mechanics - Suggestion processing - Accusation
+          handling - Real-time state synchronization Visual board will be
+          implemented in Target increment phase.
+        </div>
+        <div class="button-row">
+          <button onclick="clearLog()">Clear Log</button>
+        </div>
+      </div>
+
+      <!-- Right Panel: Players -->
+      <div class="panel">
+        <h2>Players in Game</h2>
+        <div id="playerList" class="player-list">No players yet</div>
+
+        <h3>Game Elements</h3>
+        <div style="font-size: 13px">
+          <strong>Characters:</strong><br />
+          Miss Scarlet, Colonel Mustard, Mrs. White, Mr. Green, Mrs. Peacock,
+          Professor Plum
+
+          <br /><br /><strong>Locations:</strong><br />
+          Study, Hall, Lounge, Library, Billiard Room, Conservatory, Ballroom,
+          Kitchen, Dining Room
+
+          <br /><br /><strong>Weapons:</strong><br />
+          Knife, Candlestick, Revolver, Rope, Lead Pipe, Wrench
+        </div>
+
+        <h3>Your Cards</h3>
+        <div
+          id="playerCards"
+          style="
+            font-size: 12px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #f8f9fa;
+            max-height: 120px;
+            overflow-y: auto;
+          "
+        >
+          Cards will appear here after joining game...
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      let gameState = null;
+      let myPlayer = null;
+      let myCards = [];
+      let currentSuggestion = null;
+
+      // Game elements for populating dropdowns
+      const gameElements = {
+        characters: [
+          'Miss Scarlet',
+          'Colonel Mustard',
+          'Mrs. White',
+          'Mr. Green',
+          'Mrs. Peacock',
+          'Professor Plum',
+        ],
+        locations: [
+          'Study',
+          'Hall',
+          'Lounge',
+          'Library',
+          'Billiard Room',
+          'Conservatory',
+          'Ballroom',
+          'Kitchen',
+          'Dining Room',
+        ],
+        weapons: [
+          'Knife',
+          'Candlestick',
+          'Revolver',
+          'Rope',
+          'Lead Pipe',
+          'Wrench',
+        ],
+      };
+
+      function logMessage(message, type = 'info') {
+        const log = document.getElementById('gameLog');
+        const timestamp = new Date().toLocaleTimeString();
+        const prefix =
+          type === 'error'
+            ? '❌ ERROR'
+            : type === 'success'
+            ? '✅ SUCCESS'
+            : type === 'action'
+            ? '🎮 ACTION'
+            : type === 'system'
+            ? '🔧 SYSTEM'
+            : 'ℹ️ INFO';
+
+        log.innerHTML += `[${timestamp}] ${prefix}: ${message}\n`;
+        log.scrollTop = log.scrollHeight;
+      }
+
+      function connectAndJoin() {
+        const name = document.getElementById('playerName').value.trim();
+        const character = document.getElementById('characterSelect').value;
+
+        if (!name || !character) {
+          logMessage('Please enter your name and select a character', 'error');
+          return;
+        }
+
+        logMessage('Connecting to server...', 'system');
+        socket = io('http://localhost:3001');
+
+        socket.on('connect', () => {
+          logMessage('Connected to server successfully', 'success');
+          document.getElementById('connectionStatus').className =
+            'status connected';
+          document.getElementById('connectionStatus').textContent = 'Connected';
+
+          // Populate dropdowns once connected
+          populateAllDropdowns();
+
+          // Join the game
+          logMessage(`Attempting to join as ${character}...`, 'system');
+          socket.emit('join_game', { name, character });
+        });
+
+        socket.on('disconnect', () => {
+          logMessage('Disconnected from server', 'error');
+          document.getElementById('connectionStatus').className =
+            'status disconnected';
+          document.getElementById('connectionStatus').textContent =
+            'Disconnected';
+        });
+
+        socket.on('game_joined', (data) => {
+          if (data.success) {
+            logMessage(`Successfully joined game as ${character}`, 'success');
+            myPlayer = { name, character };
+            myCards = data.cards || [];
+            updatePlayerCards();
+            document.getElementById('joinSection').style.display = 'none';
+            document
+              .getElementById('gameActions')
+              .classList.remove('disabled-section');
+            updateGameDisplay(data.gameState);
+          } else {
+            logMessage(`Failed to join game: ${data.error}`, 'error');
+          }
+        });
+
+        socket.on('game_state_update', (data) => {
+          updateGameDisplay(data);
+        });
+
+        socket.on('player_joined', (data) => {
+          logMessage(
+            `${data.player.name} joined as ${data.player.character}`,
+            'system'
+          );
+        });
+
+        socket.on('action_result', (data) => {
+          if (data.action === 'move_completed') {
+            logMessage(
+              `${data.playerName} moved from ${data.fromLocation} to ${data.toLocation}`,
+              'action'
+            );
+          } else if (data.action === 'suggestion_made') {
+            logMessage(
+              `${data.playerName} made suggestion: ${data.suspect} with ${data.weapon} in ${data.room}`,
+              'action'
+            );
+          } else if (data.action === 'accusation_failed') {
+            logMessage(
+              `${data.playerName} made accusation and was ELIMINATED!`,
+              'action'
+            );
+          } else if (data.action === 'suggestion_disproved') {
+            logMessage(
+              `${data.responderName} showed a card to ${data.suggesterName}`,
+              'action'
+            );
+          } else if (data.action === 'suggestion_not_disproved') {
+            logMessage(
+              `No one could disprove ${data.suggesterName}'s suggestion`,
+              'action'
+            );
+          }
+        });
+
+        socket.on('suggestion_request', (data) => {
+          currentSuggestion = data;
+          showSuggestionResponse(data);
+        });
+
+        socket.on('card_shown', (data) => {
+          if (data.targetPlayer === myPlayer.name) {
+            logMessage(
+              `${data.responderName} showed you the ${data.card} card`,
+              'success'
+            );
+          }
+        });
+
+        socket.on('action_error', (data) => {
+          logMessage(`Action failed: ${data.error}`, 'error');
+        });
+      }
+
+      function populateAllDropdowns() {
+        // Populate all dropdowns with game elements
+        populateSelect(
+          'locationSelect',
+          gameElements.locations,
+          'Select destination...'
+        );
+        populateSelect(
+          'suspectSelect',
+          gameElements.characters,
+          'Select suspect...'
+        );
+        populateSelect(
+          'weaponSelect',
+          gameElements.weapons,
+          'Select weapon...'
+        );
+        populateSelect('accuseSuspect', gameElements.characters, 'Suspect...');
+        populateSelect('accuseWeapon', gameElements.weapons, 'Weapon...');
+        populateSelect('accuseRoom', gameElements.locations, 'Room...');
+
+        logMessage('All dropdown options loaded', 'system');
+      }
+
+      function populateSelect(selectId, options, defaultText) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        select.innerHTML = `<option value="">${defaultText}</option>`;
+        options.forEach((option) => {
+          const optionElement = document.createElement('option');
+          optionElement.value = option;
+          optionElement.textContent = option;
+          select.appendChild(optionElement);
+        });
+      }
+
+      function updateGameDisplay(state) {
+        gameState = state;
+
+        // Update player list
+        updatePlayerList(state.players);
+
+        // Update turn indicator
+        updateTurnDisplay(state);
+
+        // Display recent messages
+        if (state.messageLog) {
+          state.messageLog.forEach((msg) => {
+            if (!msg.displayed) {
+              logMessage(msg.message, 'system');
+              msg.displayed = true;
+            }
+          });
+        }
+      }
+
+      function updatePlayerList(players) {
+        const list = document.getElementById('playerList');
+        list.innerHTML = '';
+
+        if (players.length === 0) {
+          list.innerHTML = 'No players yet';
+          return;
+        }
+
+        players.forEach((player) => {
+          const div = document.createElement('div');
+          div.className = `player-item ${
+            player.isEliminated ? 'eliminated' : ''
+          }`;
+          div.innerHTML = `
+            <strong>${player.name}</strong> - ${player.character}<br>
+            Location: ${player.location}<br>
+            Actions: ${player.actionsCount} ${
+            player.isEliminated ? '(ELIMINATED)' : ''
+          }
+          `;
+          list.appendChild(div);
+        });
+      }
+
+      function updateTurnDisplay(state) {
+        const turnDiv = document.getElementById('turnIndicator');
+        const isMyTurn = state.currentPlayerName === myPlayer?.name;
+
+        // Handle cases where currentPlayerName might be undefined
+        if (state.phase === 'WAITING_FOR_PLAYERS') {
+          turnDiv.textContent = 'Waiting for more players to join...';
+          turnDiv.className = 'turn-indicator';
+        } else if (state.phase === 'PLAYING') {
+          if (state.currentPlayerName) {
+            if (isMyTurn) {
+              turnDiv.textContent = `YOUR TURN! Choose an action.`;
+              turnDiv.className = 'turn-indicator your-turn';
+            } else {
+              turnDiv.textContent = `${state.currentPlayerName}'s turn`;
+              turnDiv.className = 'turn-indicator';
+            }
+          } else {
+            turnDiv.textContent = 'Determining next player...';
+            turnDiv.className = 'turn-indicator';
+          }
+        } else if (state.phase === 'GAME_OVER') {
+          turnDiv.textContent = 'Game Over';
+          turnDiv.className = 'turn-indicator';
+        } else {
+          turnDiv.textContent = 'Game starting...';
+          turnDiv.className = 'turn-indicator';
+        }
+
+        // Enable/disable action buttons
+        const moveBtn = document.getElementById('moveBtn');
+        const suggestBtn = document.getElementById('suggestBtn');
+        const accuseBtn = document.getElementById('accuseBtn');
+
+        const myPlayerData = state.players.find(
+          (p) => p.name === myPlayer?.name
+        );
+        const canAct =
+          isMyTurn &&
+          state.phase === 'PLAYING' &&
+          myPlayerData &&
+          !myPlayerData.isEliminated &&
+          state.currentPlayerName; // Ensure currentPlayerName is defined
+
+        moveBtn.disabled = !canAct;
+        suggestBtn.disabled = !canAct;
+        accuseBtn.disabled = !canAct;
+      }
+
+      function makeMove() {
+        const destination = document.getElementById('locationSelect').value;
+        if (!destination) {
+          logMessage('Please select a destination', 'error');
+          return;
+        }
+
+        logMessage(`Attempting to move to ${destination}...`, 'action');
+        socket.emit('game_action', {
+          type: 'MOVE',
+          destination: destination,
+        });
+      }
+
+      function makeSuggestion() {
+        const suspect = document.getElementById('suspectSelect').value;
+        const weapon = document.getElementById('weaponSelect').value;
+
+        if (!suspect || !weapon) {
+          logMessage('Please select both suspect and weapon', 'error');
+          return;
+        }
+
+        logMessage(`Making suggestion: ${suspect} with ${weapon}...`, 'action');
+        socket.emit('game_action', {
+          type: 'SUGGESTION',
+          suspect: suspect,
+          weapon: weapon,
+        });
+      }
+
+      function makeAccusation() {
+        const suspect = document.getElementById('accuseSuspect').value;
+        const weapon = document.getElementById('accuseWeapon').value;
+        const room = document.getElementById('accuseRoom').value;
+
+        if (!suspect || !weapon || !room) {
+          logMessage(
+            'Please select suspect, weapon, and room for accusation',
+            'error'
+          );
+          return;
+        }
+
+        const confirm = window.confirm(
+          `Are you sure you want to accuse ${suspect} with ${weapon} in ${room}? If wrong, you will be eliminated!`
+        );
+        if (!confirm) return;
+
+        logMessage(
+          `Making accusation: ${suspect} with ${weapon} in ${room}...`,
+          'action'
+        );
+        socket.emit('game_action', {
+          type: 'ACCUSATION',
+          suspect: suspect,
+          weapon: weapon,
+          room: room,
+        });
+      }
+
+      function getGameState() {
+        if (socket) {
+          logMessage('Requesting current game state...', 'system');
+          socket.emit('get_game_state');
+        } else {
+          logMessage('Not connected to server', 'error');
+        }
+      }
+
+      function clearLog() {
+        document.getElementById('gameLog').innerHTML = 'Game log cleared.\n';
+      }
+
+      function updatePlayerCards() {
+        const cardsDiv = document.getElementById('playerCards');
+        if (myCards.length === 0) {
+          cardsDiv.innerHTML = 'No cards assigned yet...';
+          return;
+        }
+
+        cardsDiv.innerHTML =
+          `<strong>Your cards (${myCards.length}):</strong><br>` +
+          myCards.map((card) => `• ${card}`).join('<br>');
+      }
+
+      function showSuggestionResponse(suggestion) {
+        const responseDiv = document.getElementById('suggestionResponse');
+        const detailsDiv = document.getElementById('suggestionDetails');
+        const cardSelect = document.getElementById('cardToShow');
+
+        detailsDiv.innerHTML =
+          `<strong>${suggestion.playerName} suggests:</strong><br>` +
+          `${suggestion.suspect} with ${suggestion.weapon} in ${suggestion.room}`;
+
+        // Find cards that can disprove the suggestion
+        const disprovingCards = myCards.filter(
+          (card) =>
+            card === suggestion.suspect ||
+            card === suggestion.weapon ||
+            card === suggestion.room
+        );
+
+        cardSelect.innerHTML =
+          '<option value="">Select card to show...</option>';
+        disprovingCards.forEach((card) => {
+          const option = document.createElement('option');
+          option.value = card;
+          option.textContent = card;
+          cardSelect.appendChild(option);
+        });
+
+        document.getElementById('showCardBtn').disabled =
+          disprovingCards.length === 0;
+        responseDiv.style.display = 'block';
+
+        if (disprovingCards.length === 0) {
+          logMessage('You cannot disprove this suggestion', 'system');
+        } else {
+          logMessage(
+            `You can disprove with: ${disprovingCards.join(', ')}`,
+            'system'
+          );
+        }
+      }
+
+      function showCard() {
+        const cardToShow = document.getElementById('cardToShow').value;
+        if (!cardToShow) {
+          logMessage('Please select a card to show', 'error');
+          return;
+        }
+
+        socket.emit('suggestion_response', {
+          suggestionId: currentSuggestion.id,
+          action: 'show_card',
+          card: cardToShow,
+        });
+
+        logMessage(`You showed the ${cardToShow} card`, 'action');
+        hideSuggestionResponse();
+      }
+
+      function cannotDisprove() {
+        socket.emit('suggestion_response', {
+          suggestionId: currentSuggestion.id,
+          action: 'cannot_disprove',
+        });
+
+        logMessage('You cannot disprove this suggestion', 'action');
+        hideSuggestionResponse();
+      }
+
+      function hideSuggestionResponse() {
+        document.getElementById('suggestionResponse').style.display = 'none';
+        currentSuggestion = null;
+      }
+
+      // Initialize dropdowns on page load
+      window.addEventListener('load', () => {
+        populateAllDropdowns();
+        logMessage('Clue-Less Minimal Demo initialized', 'system');
+        logMessage('Click "Connect & Join" to begin', 'system');
+      });
+    </script>
+  </body>
+</html>
