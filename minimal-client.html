@@ -736,7 +736,9 @@
         } else if (state.phase === 'PLAYING') {
           if (state.currentPlayerName) {
             if (isMyTurn) {
-              const myPlayerData = state.players.find(p => p.name === myPlayer?.name);
+              const myPlayerData = state.players.find(
+                (p) => p.name === myPlayer?.name
+              );
               turnDiv.textContent = `YOUR TURN! Choose an action.`;
               turnDiv.className = 'turn-indicator your-turn';
             } else {

@@ -407,12 +407,12 @@ class MinimalGame {
     this.phase = 'PLAYING';
     this.currentTurn = this.turnOrder[0];
     const firstPlayer = this.players.get(this.currentTurn);
-    
+
     // Reset hasMoved for all players at game start
-    this.players.forEach(player => {
+    this.players.forEach((player) => {
       player.hasMoved = false;
     });
-    
+
     this.logMessage(
       `Game Started! ${firstPlayer.name} (${firstPlayer.character}) goes first`
     );
@@ -493,9 +493,10 @@ class MinimalGame {
 
     // Check if player has already moved this turn
     if (player.hasMoved) {
-      return { 
-        success: false, 
-        error: 'You have already moved this turn. You can still make suggestions or accusations.' 
+      return {
+        success: false,
+        error:
+          'You have already moved this turn. You can still make suggestions or accusations.',
       };
     }
 
