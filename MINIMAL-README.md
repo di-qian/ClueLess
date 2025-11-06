@@ -5,22 +5,20 @@
 ### **1. Install Dependencies**
 
 ```bash
-# Copy the demo package.json if not already done
-cp demo-package.json package.json
-
-# Install dependencies
+# Dependencies should already be installed from the main project
+# If needed, install dependencies
 npm install
 ```
 
 ### **2. Run Core Functionality Server**
 
 ```bash
-node minimal-server-simple.js
+node minimal-server.js
 ```
 
 ### **3. Open Game Clients**
 
-Open `minimal-client-simple.html` in multiple browser tabs (2-6 players) to test core functionality.
+Open `minimal-client.html` in multiple browser tabs (2-6 players) to test core functionality.
 
 ## Minimal Increment Philosophy
 
@@ -28,11 +26,12 @@ This minimal increment focuses on **validating core game functionality** from ou
 
 ### **Core Functionality Demonstrated**
 
-- ✅ **Player Management** - Join game, character selection, elimination tracking
+- ✅ **Player Management** - Join game, character selection, card dealing, elimination tracking
 - ✅ **Game State Management** - Turn progression, game phase transitions
-- ✅ **Movement System** - Location tracking and basic validation
-- ✅ **Suggestion Processing** - Multi-player interaction mechanics
-- ✅ **Accusation Handling** - Player elimination logic
+- ✅ **Movement System** - Location tracking and validation
+- ✅ **Suggestion Processing** - Complete turn-based card showing mechanics with proper ClueLess rules
+- ✅ **Accusation Handling** - Win/lose logic with case file validation
+- ✅ **Card System** - Proper card dealing, case file generation, and private card showing
 - ✅ **Real-time Synchronization** - All players see consistent game state
 - ✅ **Error Handling** - Invalid action prevention and user feedback
 
@@ -43,21 +42,28 @@ This minimal increment focuses on **validating core game functionality** from ou
 - **Communication Layer** - Real-time Socket.IO messaging and state broadcast
 - **Action Processing** - Movement, suggestion, and accusation validation
 
-## How to Play (Core Functionality Demo)
+## How to Play (Complete ClueLess Demo)
 
 1. **Join Game**: Enter name and select character (6 characters available)
-2. **Game Start**: Automatic start when 2+ players join
-3. **Take Actions**: When it's your turn:
+2. **Receive Cards**: Each player automatically receives cards when game starts
+3. **Game Start**: Automatic start when 2+ players join
+4. **Take Actions**: When it's your turn:
    - **Move**: Select destination from available locations
-   - **Suggest**: Choose suspect and weapon for suggestion
-   - **Accuse**: Make final accusation (eliminates if wrong)
-4. **Monitor Activity**: Watch game log for real-time activity and state changes
+   - **Suggest**: Choose suspect and weapon for suggestion (room is automatic based on your location)
+   - **Accuse**: Make final accusation with suspect, weapon, and room (wins if correct, eliminates if wrong)
+5. **Respond to Suggestions**: When other players make suggestions:
+   - **Show Card**: If you have a matching card, you must show it privately
+   - **Cannot Disprove**: If you have no matching cards, declare you cannot disprove
+6. **Monitor Activity**: Watch game log for real-time activity and state changes
+7. **View Your Cards**: Check the "Your Cards" section to see what you can use to disprove suggestions
 
 ## Interface Overview
 
-- **Left Panel**: Game controls and player management
-- **Right Panel**: Activity log showing all game events and state changes
-- **Focus**: Functionality validation through detailed logging rather than visual board
+- **Left Panel**: Game controls, player actions, and suggestion response interface
+- **Center Panel**: Comprehensive activity log showing all game events, moves, suggestions, and card interactions
+- **Right Panel**: Player list and your personal cards display
+- **Responsive Design**: Wider layout for better readability with larger fonts
+- **Focus**: Complete playable ClueLess experience with proper game mechanics
 
 ## Available Game Elements
 
@@ -74,22 +80,24 @@ This minimal increment focuses on **validating core game functionality** from ou
 
 ## Demo Script
 
-For presentation guidelines and team roles, see `MINIMAL-DEMO-SCRIPT-SIMPLE.md`.
+For presentation guidelines and team roles, see `MINIMAL-DEMO-SCRIPT.md`.
 
 ## Strategic Approach
 
 **Minimal Increment Focus:**
 
-- Validate all core game mechanics from design document
-- Prove three-tier architecture works under real gameplay
-- Establish solid foundation for visual enhancements
+- ✅ **Complete ClueLess game mechanics** - Full card dealing, suggestion responses, win conditions
+- ✅ **Authentic ClueLess rules** - Following official game rules for suggestions and accusations
+- ✅ **Three-tier architecture validation** - Proven under complete gameplay scenarios
+- ✅ **Multiplayer interaction** - Real-time card showing and turn-based responses
+- ✅ **Solid foundation** - Ready for visual board enhancement in Target increment
 
 **Target Increment Goals:**
 
-- Add visual 3x3 game board representation
-- Implement complete Clue-Less movement rules
-- Enhanced UI with drag-and-drop functionality
-- Complete card dealing and win condition systems
+- Add visual 3x3 game board with hallway representation
+- Implement complete ClueLess movement rules with hallway restrictions
+- Enhanced UI with character piece visualization and board interaction
+- Secret passage mechanics and advanced movement options
 
 ## Architecture Notes
 
@@ -99,7 +107,7 @@ This minimal increment implements:
 - **Network Layer**: Real-time Socket.IO communication and state broadcast
 - **Client Layer**: Functional interface focused on mechanics validation
 
-**Design Philosophy**: Prove the game works before making it pretty.
+**Design Philosophy**: Implement complete game mechanics first, then enhance with visual board representation.
 
 ---
 

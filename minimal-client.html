@@ -28,7 +28,7 @@
         background: white;
         border: 1px solid #ccc;
         padding: 10px;
-        overflow: auto;
+        overflow: hidden;
       }
 
       h2 {
@@ -268,37 +268,13 @@
       <!-- Center Panel: Game Log -->
       <div class="panel">
         <h2>Game Activity Log</h2>
-        <div class="game-log" id="gameLog">
-          Clue-Less Minimal Increment initialized. Ready for players to join...
-          This demonstration focuses on core game functionality: - Player
-          joining and character selection - Turn-based game management -
-          Character movement mechanics - Suggestion processing - Accusation
-          handling - Real-time state synchronization Visual board will be
-          implemented in Target increment phase.
-        </div>
-        <div class="button-row">
-          <button onclick="clearLog()">Clear Log</button>
-        </div>
+        <div class="game-log" id="gameLog"></div>
       </div>
 
       <!-- Right Panel: Players -->
       <div class="panel">
         <h2>Players in Game</h2>
         <div id="playerList" class="player-list">No players yet</div>
-
-        <h3>Game Elements</h3>
-        <div style="font-size: 13px">
-          <strong>Characters:</strong><br />
-          Miss Scarlet, Colonel Mustard, Mrs. White, Mr. Green, Mrs. Peacock,
-          Professor Plum
-
-          <br /><br /><strong>Locations:</strong><br />
-          Study, Hall, Lounge, Library, Billiard Room, Conservatory, Ballroom,
-          Kitchen, Dining Room
-
-          <br /><br /><strong>Weapons:</strong><br />
-          Knife, Candlestick, Revolver, Rope, Lead Pipe, Wrench
-        </div>
 
         <h3>Your Cards</h3>
         <div
@@ -683,10 +659,6 @@
         }
       }
 
-      function clearLog() {
-        document.getElementById('gameLog').innerHTML = 'Game log cleared.\n';
-      }
-
       function updatePlayerCards() {
         const cardsDiv = document.getElementById('playerCards');
         if (myCards.length === 0) {
@@ -774,8 +746,10 @@
       // Initialize dropdowns on page load
       window.addEventListener('load', () => {
         populateAllDropdowns();
-        logMessage('Clue-Less Minimal Demo initialized', 'system');
-        logMessage('Click "Connect & Join" to begin', 'system');
+        logMessage(
+          'ClueLess Demo ready - Click "Connect & Join" to begin',
+          'system'
+        );
       });
     </script>
   </body>
