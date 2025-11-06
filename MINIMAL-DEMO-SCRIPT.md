@@ -47,13 +47,13 @@
 ### **Prerequisites:**
 
 1. Navigate to project directory
-2. Start simplified minimal server:
+2. Start minimal server:
    ```bash
-   node minimal-server-simple.js
+   node minimal-server.js
    ```
-3. Have `minimal-client-simple.html` ready in multiple browser tabs
+3. Have `minimal-client.html` ready in multiple browser tabs
 4. Prepare demo player names: Alice, Bob, Charlie
-5. Focus on game log activity rather than visual board elements
+5. Focus on game log activity and proper movement system demonstration
 
 ---
 
@@ -96,19 +96,19 @@ _"I'll demonstrate our core functionality implementation, focusing on game logic
 1. **Show Terminal:**
 
    ```bash
-   node minimal-server-simple.js
+   node minimal-server.js
    ```
 
    **Point to startup logs:**
 
    ```
-   Core Functionality Demo
-   ✓ Player management and character selection
-   ✓ Turn-based game flow
-   ✓ Movement mechanics
-   ✓ Suggestion processing
-   ✓ Real-time state synchronization
-   Focus: Core game logic demonstration
+   [CASE FILE] Secret solution created:
+      Who: [Character]
+      What: [Weapon]
+      Where: [Room]
+   [GAME] Game ID: MINIMAL-xxxxx
+   [NETWORK] Communication layer ready
+   Server running on port 3001
    ```
 
 2. **Open minimal-client.html**
@@ -130,30 +130,34 @@ _"Now I'll demonstrate the essential game functionality with multiple players."_
 
    - Open new tab, join as "Bob" / "Colonel Mustard"
    - **Demonstrate:** Real-time synchronization in both windows
-   - **Activity log shows:** Both players visible, game auto-starts
-   - **Highlight:** "Game class managing state correctly"
+   - **Activity log shows:** Both players visible, host can start game
+   - **Highlight:** "Game class managing state correctly, host controls game start"
 
-3. **Third Player (Charlie):**
+3. **Third Player (Charlie) & Game Start:**
    - Add "Charlie" / "Mr. Green"
-   - **Show:** Turn-based system activates
-   - **Activity log:** "Alice's turn" message appears
+   - **Show:** Host (Alice) sees "Start Game" button
+   - **Click Start Game:** Cards are dealt, game begins
+   - **Activity log:** "Game Started! [Player] goes first" message appears
 
 **Part C: Core Game Actions Demonstration (4:30-6:00)**
 _"Now I'll demonstrate each core mechanic from our design document."_
 
 1. **Movement Mechanics (Alice's turn):**
 
-   - Select destination "Library"
+   - **Show movement dropdown:** Only displays valid moves from current location
+   - Select an adjacent hallway (e.g., "Study-Hall Hallway")
    - Click "Move"
-   - **Activity log shows:** "Alice moved from [location] to Library"
-   - **Point out:** "Turn automatically advances to Bob"
+   - **Activity log shows:** "Alice moved from Study to Study-Hall Hallway"
+   - **Demonstrate:** Move button now disabled (one move per turn)
+   - **Point out:** "Player can still suggest/accuse, then must end turn"
 
 2. **Suggestion Processing (Bob's turn):**
 
+   - **Show:** Bob is in a room, suggestion section visible
    - Select suspect "Mrs. White", weapon "Candlestick"
    - Click "Suggest"
-   - **Activity log shows:** Full suggestion text and processing
-   - **Demonstrate:** Other players see suggestion, turn advances
+   - **Activity log shows:** Full suggestion text and card showing process
+   - **Demonstrate:** Other players see suggestion response interface
 
 3. **Game State Synchronization:**
    - Switch between browser tabs rapidly
@@ -199,11 +203,12 @@ _"Our minimal increment directly implements the core classes from our design doc
 **Slide 2: Core Functionality Validation**
 _"Each demonstrated feature validates design document specifications:"_
 
-- ✅ **Game.startGame()** - Automatic game start with minimum players
-- ✅ **Game.nextTurn()** - Turn progression and active player management
-- ✅ **Player.moveTo()** - Location updates with validation
-- ✅ **Suggestion.checkSuggestion()** - Basic suggestion processing logic
-- ✅ **Accusation.checkAccusation()** - Elimination handling for failed accusations
+- ✅ **Game.startGame()** - Host-controlled game start with card dealing
+- ✅ **Game.nextTurn()** - Turn progression with proper one-move restriction
+- ✅ **Player.moveTo()** - Dynamic movement options based on 3x3 board layout
+- ✅ **Suggestion.processSuggestion()** - Room-based suggestions with card showing
+- ✅ **Accusation.processAccusation()** - Win/lose logic with case file validation
+- ✅ **Movement.getMovementOptions()** - Authentic Clue board movement rules
 
 **Slide 3: Architecture Benefits Demonstrated**
 _"Our three-tier architecture proves effective:"_
@@ -250,12 +255,13 @@ _"Our minimal increment successfully meets all assignment requirements:"_
 **Slide 2: Core Functionality Achievement**
 _"Validated capabilities from our design document:"_
 
-- **Player Management** - Join, character selection, elimination tracking
-- **Game State Management** - Turn progression, game phase transitions
-- **Movement System** - Location tracking and validation
-- **Suggestion Processing** - Multi-player interaction and card checking simulation
-- **Accusation Handling** - Elimination logic and game continuation
-- **Real-time Synchronization** - All players see consistent game state
+- **Player Management** - Join, character selection, host assignment, card dealing
+- **Game State Management** - Host-controlled start, turn progression, game phases
+- **Movement System** - 3x3 board layout with hallways, dynamic movement options
+- **Suggestion Processing** - Room-based suggestions with card showing mechanics
+- **Accusation Handling** - Win/lose logic with case file validation
+- **Real-time Synchronization** - All players see consistent game state and actions
+- **Turn Rules** - Authentic Clue rules: one move per turn, suggestions from rooms
 
 **Slide 3: Target Increment Roadmap**
 _"Building on our proven foundation:"_
