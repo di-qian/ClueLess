@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clue-Less</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 10px;
+        background: #f0f0f0;
+        font-size: 16px;
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: 350px 1fr 300px;
+        gap: 15px;
+        height: 95vh;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 10px;
+      }
+
+      .panel {
+        background: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        overflow: hidden;
+      }
+
+      h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        background: #e0e0e0;
+        padding: 5px;
+        text-align: center;
+      }
+
+      h3 {
+        margin: 10px 0 5px 0;
+        font-size: 16px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 2px;
+      }
+
+      .player-name-display {
+        text-align: center;
+        background: #e3f2fd;
+        padding: 8px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #1565c0;
+        border: 1px solid #bbdefb;
+      }
+
+      .player-name-display span {
+        font-weight: bold;
+      }
+
+      .status {
+        padding: 5px;
+        margin: 5px 0;
+        border-radius: 3px;
+        text-align: center;
+        font-size: 14px;
+      }
+      .status.connected {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status.disconnected {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 6px;
+        margin: 3px 0;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background: #007cba;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        margin: 2px;
+        font-size: 14px;
+        border-radius: 2px;
+      }
+      button:hover {
+        background: #005a87;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .end-turn-btn {
+        background: #dc3545;
+        width: 100%;
+        font-weight: bold;
+        margin: 10px 0;
+        padding: 10px;
+      }
+      .end-turn-btn:hover:not(:disabled) {
+        background: #c82333;
+      }
+
+      .turn-indicator {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 10px;
+        margin: 5px 0;
+        text-align: center;
+        font-size: 15px;
+        font-weight: bold;
+      }
+
+      .turn-indicator.your-turn {
+        background: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+
+      .player-list {
+        max-height: 350px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 8px;
+        font-size: 13px;
+      }
+
+      .player-item {
+        margin: 3px 0;
+        padding: 3px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+      }
+
+      .player-item.eliminated {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .game-log {
+        height: 100%;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 8px;
+        background: #f9f9f9;
+        font-size: 14px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+
+      .action-group {
+        margin: 8px 0;
+        padding: 5px;
+        border: 1px solid #e0e0e0;
+        background: #f8f9fa;
+      }
+
+      .action-group h4 {
+        margin: 0 0 5px 0;
+        font-size: 15px;
+        color: #333;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 5px;
+        margin: 5px 0;
+      }
+
+      .disabled-section {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Left Panel: Game Controls -->
+      <div class="panel">
+        <h2>CLUE-LESS</h2>
+        <div
+          id="playerNameDisplay"
+          class="player-name-display"
+          style="display: none"
+        >
+          Playing as: <span id="currentPlayerName"></span>
+        </div>
+
+        <div id="connectionStatus" class="status disconnected">
+          Disconnected
+        </div>
+
+        <!-- Join Game Section -->
+        <div id="joinSection">
+          <h3>Join Game</h3>
+          <input type="text" id="playerName" placeholder="Enter your name" />
+          <select id="characterSelect">
+            <option value="">Select Character</option>
+            <option value="Miss Scarlet">Miss Scarlet</option>
+            <option value="Colonel Mustard">Colonel Mustard</option>
+            <option value="Mrs. White">Mrs. White</option>
+            <option value="Mr. Green">Mr. Green</option>
+            <option value="Mrs. Peacock">Mrs. Peacock</option>
+            <option value="Professor Plum">Professor Plum</option>
+          </select>
+          <button onclick="connectAndJoin()">Connect & Join</button>
+        </div>
+
+        <!-- Game Actions Section -->
+        <div id="gameActions" class="disabled-section">
+          <div id="turnIndicator" class="turn-indicator">
+            Waiting for game...
+          </div>
+
+          <!-- Host Start Game Button -->
+          <div id="hostControls" style="display: none; margin: 10px 0">
+            <button
+              onclick="startGame()"
+              id="startGameBtn"
+              style="
+                background: #28a745;
+                color: white;
+                padding: 10px 20px;
+                font-size: 16px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+              "
+            >
+              Start Game
+            </button>
+            <div style="font-size: 12px; color: #666; margin-top: 5px">
+              You are the host. Click to start the game.
+            </div>
+          </div>
+
+          <!-- Movement -->
+          <div class="action-group">
+            <h4>Movement</h4>
+            <select id="locationSelect">
+              <option value="">Select destination...</option>
+            </select>
+            <button onclick="makeMove()" id="moveBtn" disabled>Move</button>
+          </div>
+
+          <!-- Suggestions -->
+          <div class="action-group" id="suggestionSection">
+            <h4>Make Suggestion</h4>
+            <select id="suspectSelect">
+              <option value="">Select suspect...</option>
+            </select>
+            <select id="weaponSelect">
+              <option value="">Select weapon...</option>
+            </select>
+            <button onclick="makeSuggestion()" id="suggestBtn" disabled>
+              Suggest
+            </button>
+          </div>
+
+          <!-- Accusations -->
+          <div class="action-group" id="accusationSection">
+            <h4>Make Accusation</h4>
+            <select id="accuseSuspect">
+              <option value="">Suspect...</option>
+            </select>
+            <select id="accuseWeapon">
+              <option value="">Weapon...</option>
+            </select>
+            <select id="accuseRoom">
+              <option value="">Room...</option>
+            </select>
+            <button onclick="makeAccusation()" id="accuseBtn" disabled>
+              Accuse
+            </button>
+          </div>
+
+          <!-- End Turn -->
+          <div class="action-group">
+            <button
+              onclick="endTurn()"
+              id="endTurnBtn"
+              class="end-turn-btn"
+              disabled
+            >
+              End Turn
+            </button>
+          </div>
+
+          <!-- Suggestion Response -->
+          <div
+            class="action-group"
+            id="suggestionResponse"
+            style="display: none"
+          >
+            <h4>Respond to Suggestion</h4>
+            <div
+              id="suggestionDetails"
+              style="
+                margin-bottom: 10px;
+                padding: 8px;
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                font-size: 13px;
+              "
+            ></div>
+            <select id="cardToShow">
+              <option value="">Select card to show...</option>
+            </select>
+            <div class="button-row">
+              <button onclick="showCard()" id="showCardBtn">Show Card</button>
+              <button onclick="cannotDisprove()" id="cannotDisproveBtn">
+                Cannot Disprove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Panel: Game Log -->
+      <div class="panel">
+        <h2>Game Activity Log</h2>
+        <div class="game-log" id="gameLog"></div>
+      </div>
+
+      <!-- Right Panel: Players -->
+      <div class="panel">
+        <h2>Players in Game</h2>
+        <div id="playerList" class="player-list">No players yet</div>
+
+        <h3>Your Cards</h3>
+        <div
+          id="playerCards"
+          style="
+            font-size: 12px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #f8f9fa;
+            max-height: 120px;
+            overflow-y: auto;
+          "
+        >
+          Cards will appear here after joining game...
+        </div>
+
+        <h3>Cards Seen</h3>
+        <div
+          id="cardsSeen"
+          style="
+            font-size: 12px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #fff3cd;
+            max-height: 100px;
+            overflow-y: auto;
+          "
+        >
+          Cards shown to you will appear here...
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      let gameState = null;
+      let myPlayer = null;
+      let playerId = null; // Store our socket ID for host detection
+      let myCards = [];
+      let cardsSeen = []; // Track cards shown to this player
+      let currentSuggestion = null;
+      let displayedMessages = new Set(); // Track messages already displayed
+
+      // Game elements for populating dropdowns
+      const gameElements = {
+        characters: [
+          'Miss Scarlet',
+          'Colonel Mustard',
+          'Mrs. White',
+          'Mr. Green',
+          'Mrs. Peacock',
+          'Professor Plum',
+        ],
+        locations: [
+          'Study',
+          'Hall',
+          'Lounge',
+          'Library',
+          'Billiard Room',
+          'Conservatory',
+          'Ballroom',
+          'Kitchen',
+          'Dining Room',
+        ],
+        weapons: [
+          'Knife',
+          'Candlestick',
+          'Revolver',
+          'Rope',
+          'Lead Pipe',
+          'Wrench',
+        ],
+      };
+
+      function logMessage(message, type = 'info') {
+        const log = document.getElementById('gameLog');
+        const timestamp = new Date().toLocaleTimeString();
+        const prefix =
+          type === 'error'
+            ? '✗ ERROR'
+            : type === 'success'
+            ? '✓ SUCCESS'
+            : type === 'action'
+            ? 'ACTION'
+            : type === 'system'
+            ? 'SYSTEM'
+            : 'INFO';
+
+        log.innerHTML += `[${timestamp}] ${prefix}: ${message}\n`;
+        log.scrollTop = log.scrollHeight;
+      }
+
+      function connectAndJoin() {
+        const name = document.getElementById('playerName').value.trim();
+        const character = document.getElementById('characterSelect').value;
+
+        if (!name || !character) {
+          logMessage('Please enter your name and select a character', 'error');
+          return;
+        }
+
+        logMessage('Connecting to server...', 'system');
+        socket = io('http://localhost:3001');
+
+        socket.on('connect', () => {
+          logMessage('Connected to server successfully', 'success');
+          document.getElementById('connectionStatus').className =
+            'status connected';
+          document.getElementById('connectionStatus').textContent = 'Connected';
+
+          // Populate dropdowns once connected
+          populateAllDropdowns();
+
+          // Join the game
+          logMessage(`Attempting to join as ${character}...`, 'system');
+          socket.emit('join_game', { name, character });
+        });
+
+        socket.on('disconnect', () => {
+          logMessage('Disconnected from server', 'error');
+          document.getElementById('connectionStatus').className =
+            'status disconnected';
+          document.getElementById('connectionStatus').textContent =
+            'Disconnected';
+        });
+
+        socket.on('game_joined', (data) => {
+          if (data.success) {
+            logMessage(`Successfully joined game as ${character}`, 'success');
+            myPlayer = { name, character };
+            myCards = data.cards || [];
+            // Store our player ID for host detection
+            playerId = socket.id;
+            updatePlayerCards();
+
+            // Show player name under title
+            document.getElementById(
+              'currentPlayerName'
+            ).textContent = `${name} (${character})`;
+            document.getElementById('playerNameDisplay').style.display =
+              'block';
+
+            document.getElementById('joinSection').style.display = 'none';
+            document
+              .getElementById('gameActions')
+              .classList.remove('disabled-section');
+            updateGameDisplay(data.gameState);
+          } else {
+            logMessage(`Failed to join game: ${data.error}`, 'error');
+          }
+        });
+
+        socket.on('game_state_update', (data) => {
+          updateGameDisplay(data);
+        });
+
+        socket.on('player_joined', (data) => {
+          logMessage(
+            `${data.player.name} joined as ${data.player.character}`,
+            'system'
+          );
+        });
+
+        socket.on('action_result', (data) => {
+          if (data.action === 'move_completed') {
+            logMessage(
+              `${data.playerName} moved from ${data.fromLocation} to ${data.toLocation}`,
+              'action'
+            );
+            // If it's my move, update my movement options
+            if (data.playerName === myPlayer?.name && data.newMovementOptions) {
+              updateMovementOptions(data.newMovementOptions, data.toLocation);
+            }
+          } else if (data.action === 'suggestion_made') {
+            logMessage(
+              `${data.playerName} made suggestion: ${data.suspect} with ${data.weapon} in ${data.room}`,
+              'action'
+            );
+          } else if (data.action === 'accusation_failed') {
+            logMessage(
+              `${data.playerName} made accusation and was ELIMINATED!`,
+              'action'
+            );
+          } else if (data.action === 'suggestion_disproved') {
+            logMessage(
+              `${data.responderName} showed a card to ${data.suggesterName}`,
+              'action'
+            );
+          } else if (data.action === 'suggestion_not_disproved') {
+            logMessage(
+              `No one could disprove ${data.suggesterName}'s suggestion`,
+              'action'
+            );
+          }
+        });
+
+        socket.on('suggestion_request', (data) => {
+          currentSuggestion = data;
+          showSuggestionResponse(data);
+        });
+
+        socket.on('card_shown', (data) => {
+          if (data.targetPlayer === myPlayer.name) {
+            // Add to cards seen list
+            const seenCard = {
+              card: data.card,
+              shownBy: data.responderName,
+              timestamp: new Date().toLocaleTimeString(),
+            };
+            cardsSeen.push(seenCard);
+            updateCardsSeen();
+
+            // Show a prominent alert for the card shown
+            alert(`${data.responderName} showed you the "${data.card}" card!`);
+
+            logMessage(
+              `CARD REVEALED: ${data.responderName} showed you the ${data.card} card`,
+              'success'
+            );
+
+            logMessage(
+              `You now know that ${data.responderName} has the ${data.card} card`,
+              'system'
+            );
+          }
+        });
+
+        socket.on('cards_updated', (data) => {
+          myCards = data.cards;
+          updatePlayerCards();
+          logMessage(
+            'Your cards have been updated due to a new player joining',
+            'system'
+          );
+        });
+
+        socket.on('movement_options', (data) => {
+          updateMovementOptions(data.options, data.currentLocation);
+        });
+
+        socket.on('action_error', (data) => {
+          logMessage(`Action failed: ${data.error}`, 'error');
+        });
+
+        socket.on('game_won', (data) => {
+          showWinnerAnnouncement(data.winner, data.character, data.solution);
+        });
+      }
+
+      function showWinnerAnnouncement(winner, character, solution) {
+        // Simple alert popup like the confirm dialogs
+        alert(
+          `GAME WON!\n\n${winner} (${character}) is the winner!\n\nSolution: ${solution.suspect} with ${solution.weapon} in ${solution.room}`
+        );
+
+        // Log the victory
+        logMessage(
+          `GAME WON! ${winner} (${character}) is the winner!`,
+          'success'
+        );
+        logMessage(
+          `Solution: ${solution.suspect} with ${solution.weapon} in ${solution.room}`,
+          'success'
+        );
+      }
+
+      function populateAllDropdowns() {
+        // Populate all dropdowns with game elements (except location which is dynamic)
+        // locationSelect is now populated dynamically based on current location
+        populateSelect(
+          'suspectSelect',
+          gameElements.characters,
+          'Select suspect...'
+        );
+        populateSelect(
+          'weaponSelect',
+          gameElements.weapons,
+          'Select weapon...'
+        );
+        populateSelect('accuseSuspect', gameElements.characters, 'Suspect...');
+        populateSelect('accuseWeapon', gameElements.weapons, 'Weapon...');
+        populateSelect('accuseRoom', gameElements.locations, 'Room...');
+
+        logMessage(
+          'Dropdown options loaded (location dropdown is dynamic)',
+          'system'
+        );
+      }
+
+      function updateMovementOptions(options, currentLocation) {
+        const locationSelect = document.getElementById('locationSelect');
+        if (!locationSelect) return;
+
+        // Clear existing options
+        locationSelect.innerHTML =
+          '<option value="">Select destination...</option>';
+
+        // Add valid movement options
+        options.forEach((option) => {
+          const optionElement = document.createElement('option');
+          optionElement.value = option;
+          optionElement.textContent = option;
+          locationSelect.appendChild(optionElement);
+        });
+
+        // Log for debugging
+        console.log(
+          `[MOVEMENT] Available moves from ${currentLocation}:`,
+          options
+        );
+
+        if (options.length === 0) {
+          logMessage(
+            `No valid moves available from ${currentLocation}`,
+            'warning'
+          );
+        }
+      }
+
+      function populateSelect(selectId, options, defaultText) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        select.innerHTML = `<option value="">${defaultText}</option>`;
+        options.forEach((option) => {
+          const optionElement = document.createElement('option');
+          optionElement.value = option;
+          optionElement.textContent = option;
+          select.appendChild(optionElement);
+        });
+      }
+
+      function updateGameDisplay(state) {
+        gameState = state;
+
+        // Update player list
+        updatePlayerList(state.players);
+
+        // Update turn indicator
+        updateTurnDisplay(state);
+
+        // Request movement options if it's my turn
+        const isMyTurn = state.currentPlayerName === myPlayer?.name;
+        if (isMyTurn && state.phase === 'PLAYING' && socket) {
+          socket.emit('get_movement_options');
+        }
+
+        // Display recent messages
+        if (state.messageLog) {
+          state.messageLog.forEach((msg) => {
+            const messageKey = `${msg.timestamp}_${msg.message}`;
+            if (!displayedMessages.has(messageKey)) {
+              logMessage(msg.message, 'system');
+              displayedMessages.add(messageKey);
+            }
+          });
+        }
+      }
+
+      function updatePlayerList(players) {
+        const list = document.getElementById('playerList');
+        list.innerHTML = '';
+
+        if (players.length === 0) {
+          list.innerHTML = 'No players yet';
+          return;
+        }
+
+        players.forEach((player) => {
+          const div = document.createElement('div');
+          div.className = `player-item ${
+            player.isEliminated ? 'eliminated' : ''
+          }`;
+          div.innerHTML = `
+            <strong>${player.name}</strong> - ${player.character}<br>
+            Location: ${player.location} ${
+            player.isEliminated ? '(ELIMINATED)' : ''
+          }
+          `;
+          list.appendChild(div);
+        });
+      }
+
+      function updateTurnDisplay(state) {
+        const turnDiv = document.getElementById('turnIndicator');
+        const isMyTurn = state.currentPlayerName === myPlayer?.name;
+
+        // Handle cases where currentPlayerName might be undefined
+        if (state.phase === 'WAITING_FOR_PLAYERS') {
+          turnDiv.textContent = 'Waiting for more players to join...';
+          turnDiv.className = 'turn-indicator';
+        } else if (state.phase === 'PLAYING') {
+          if (state.currentPlayerName) {
+            if (isMyTurn) {
+              const myPlayerData = state.players.find(
+                (p) => p.name === myPlayer?.name
+              );
+              turnDiv.textContent = `YOUR TURN! Choose an action.`;
+              turnDiv.className = 'turn-indicator your-turn';
+            } else {
+              turnDiv.textContent = `${state.currentPlayerName}'s turn`;
+              turnDiv.className = 'turn-indicator';
+            }
+          } else {
+            turnDiv.textContent = 'Determining next player...';
+            turnDiv.className = 'turn-indicator';
+          }
+        } else if (state.phase === 'GAME_OVER') {
+          turnDiv.textContent = 'Game Over';
+          turnDiv.className = 'turn-indicator';
+        } else {
+          turnDiv.textContent = 'Game starting...';
+          turnDiv.className = 'turn-indicator';
+        }
+
+        // Show/hide host controls
+        const hostControls = document.getElementById('hostControls');
+        const isHost = playerId && state.hostId && playerId === state.hostId;
+
+        // Debug logging for host detection
+        console.log('[DEBUG] Host Detection:', {
+          playerId: playerId,
+          stateHostId: state.hostId,
+          isHost: isHost,
+          phase: state.phase,
+          playerCount: state.playerCount,
+        });
+
+        if (
+          isHost &&
+          state.phase === 'WAITING_FOR_PLAYERS' &&
+          state.playerCount >= 2
+        ) {
+          hostControls.style.display = 'block';
+          console.log('[DEBUG] Showing Start Game button to host');
+        } else {
+          hostControls.style.display = 'none';
+          console.log('[DEBUG] Hiding Start Game button');
+        }
+
+        // Show/hide suggestion section based on location type
+        const suggestionSection = document.getElementById('suggestionSection');
+        if (myPlayer && state.players) {
+          const currentPlayer = state.players.find(
+            (p) => p.name === myPlayer.name
+          );
+          if (currentPlayer) {
+            const currentLocation = currentPlayer.location;
+            // Check if current location is a room (not a hallway)
+            const rooms = [
+              'Study',
+              'Hall',
+              'Lounge',
+              'Library',
+              'Billiard Room',
+              'Conservatory',
+              'Ballroom',
+              'Kitchen',
+              'Dining Room',
+            ];
+            const isInRoom = rooms.includes(currentLocation);
+
+            if (suggestionSection) {
+              if (isInRoom) {
+                suggestionSection.style.display = 'block';
+              } else {
+                suggestionSection.style.display = 'none';
+                // Show a helpful message
+                const turnDiv = document.getElementById('turnIndicator');
+                if (isMyTurn && state.phase === 'PLAYING') {
+                  turnDiv.innerHTML = `YOUR TURN! You are in ${currentLocation}.`;
+                }
+              }
+            }
+
+            // Accusation section is always visible (can be made from anywhere)
+          }
+        }
+
+        // Enable/disable action buttons
+        const moveBtn = document.getElementById('moveBtn');
+        const suggestBtn = document.getElementById('suggestBtn');
+        const accuseBtn = document.getElementById('accuseBtn');
+        const endTurnBtn = document.getElementById('endTurnBtn');
+
+        const myPlayerData = state.players.find(
+          (p) => p.name === myPlayer?.name
+        );
+        const canMove =
+          isMyTurn &&
+          state.phase === 'PLAYING' &&
+          myPlayerData &&
+          !myPlayerData.isEliminated &&
+          !myPlayerData.hasMoved && // Player hasn't moved this turn yet
+          state.currentPlayerName;
+
+        const canSuggestOrAccuse =
+          isMyTurn &&
+          state.phase === 'PLAYING' &&
+          myPlayerData &&
+          !myPlayerData.isEliminated &&
+          state.currentPlayerName; // Suggestions and accusations allowed anytime during turn
+
+        const canEndTurn =
+          isMyTurn &&
+          state.phase === 'PLAYING' &&
+          myPlayerData &&
+          !myPlayerData.isEliminated &&
+          state.currentPlayerName; // End turn is always available on your turn
+
+        moveBtn.disabled = !canMove;
+        suggestBtn.disabled = !canSuggestOrAccuse;
+        accuseBtn.disabled = !canSuggestOrAccuse;
+        endTurnBtn.disabled = !canEndTurn;
+      }
+
+      function startGame() {
+        if (!socket) {
+          logMessage('Not connected to server', 'error');
+          return;
+        }
+
+        const confirm = window.confirm(
+          'Start the game? All players will begin playing.'
+        );
+        if (!confirm) return;
+
+        logMessage('Starting game...', 'action');
+        socket.emit('game_action', {
+          type: 'START_GAME',
+        });
+      }
+
+      function makeMove() {
+        const destination = document.getElementById('locationSelect').value;
+        if (!destination) {
+          logMessage('Please select a destination', 'error');
+          return;
+        }
+
+        logMessage(`Attempting to move to ${destination}...`, 'action');
+        socket.emit('game_action', {
+          type: 'MOVE',
+          destination: destination,
+        });
+      }
+
+      function makeSuggestion() {
+        const suspect = document.getElementById('suspectSelect').value;
+        const weapon = document.getElementById('weaponSelect').value;
+
+        if (!suspect || !weapon) {
+          logMessage('Please select both suspect and weapon', 'error');
+          return;
+        }
+
+        logMessage(`Making suggestion: ${suspect} with ${weapon}...`, 'action');
+        socket.emit('game_action', {
+          type: 'SUGGESTION',
+          suspect: suspect,
+          weapon: weapon,
+        });
+      }
+
+      function makeAccusation() {
+        const suspect = document.getElementById('accuseSuspect').value;
+        const weapon = document.getElementById('accuseWeapon').value;
+        const room = document.getElementById('accuseRoom').value;
+
+        if (!suspect || !weapon || !room) {
+          logMessage(
+            'Please select suspect, weapon, and room for accusation',
+            'error'
+          );
+          return;
+        }
+
+        const confirm = window.confirm(
+          `Are you sure you want to accuse ${suspect} with ${weapon} in ${room}? If wrong, you will be eliminated!`
+        );
+        if (!confirm) return;
+
+        logMessage(
+          `Making accusation: ${suspect} with ${weapon} in ${room}...`,
+          'action'
+        );
+        socket.emit('game_action', {
+          type: 'ACCUSATION',
+          suspect: suspect,
+          weapon: weapon,
+          room: room,
+        });
+      }
+
+      function endTurn() {
+        const confirm = window.confirm(
+          'Are you sure you want to end your turn?'
+        );
+        if (!confirm) return;
+
+        logMessage('Ending turn...', 'action');
+        socket.emit('game_action', {
+          type: 'END_TURN',
+        });
+      }
+
+      function getGameState() {
+        if (socket) {
+          logMessage('Requesting current game state...', 'system');
+          socket.emit('get_game_state');
+        } else {
+          logMessage('Not connected to server', 'error');
+        }
+      }
+
+      function updatePlayerCards() {
+        const cardsDiv = document.getElementById('playerCards');
+        if (myCards.length === 0) {
+          cardsDiv.innerHTML = 'No cards assigned yet...';
+          return;
+        }
+
+        cardsDiv.innerHTML =
+          `<strong>Your cards (${myCards.length}):</strong><br>` +
+          myCards.map((card) => `• ${card}`).join('<br>');
+      }
+
+      function updateCardsSeen() {
+        const cardsSeenDiv = document.getElementById('cardsSeen');
+        if (cardsSeen.length === 0) {
+          cardsSeenDiv.innerHTML = 'No cards shown to you yet...';
+          return;
+        }
+
+        cardsSeenDiv.innerHTML =
+          `<strong>Cards revealed (${cardsSeen.length}):</strong><br>` +
+          cardsSeen
+            .map((item) => `• ${item.card} (by ${item.shownBy})`)
+            .join('<br>');
+      }
+
+      function showSuggestionResponse(suggestion) {
+        const responseDiv = document.getElementById('suggestionResponse');
+        const detailsDiv = document.getElementById('suggestionDetails');
+        const cardSelect = document.getElementById('cardToShow');
+
+        detailsDiv.innerHTML =
+          `<strong>${suggestion.playerName} suggests:</strong><br>` +
+          `${suggestion.suspect} with ${suggestion.weapon} in ${suggestion.room}`;
+
+        // Find cards that can disprove the suggestion
+        const disprovingCards = myCards.filter(
+          (card) =>
+            card === suggestion.suspect ||
+            card === suggestion.weapon ||
+            card === suggestion.room
+        );
+
+        cardSelect.innerHTML =
+          '<option value="">Select card to show...</option>';
+        disprovingCards.forEach((card) => {
+          const option = document.createElement('option');
+          option.value = card;
+          option.textContent = card;
+          cardSelect.appendChild(option);
+        });
+
+        document.getElementById('showCardBtn').disabled =
+          disprovingCards.length === 0;
+        responseDiv.style.display = 'block';
+
+        if (disprovingCards.length === 0) {
+          logMessage('You cannot disprove this suggestion', 'system');
+        } else {
+          logMessage(
+            `You can disprove with: ${disprovingCards.join(', ')}`,
+            'system'
+          );
+        }
+      }
+
+      function showCard() {
+        const cardToShow = document.getElementById('cardToShow').value;
+        if (!cardToShow) {
+          logMessage('Please select a card to show', 'error');
+          return;
+        }
+
+        socket.emit('suggestion_response', {
+          suggestionId: currentSuggestion.id,
+          action: 'show_card',
+          card: cardToShow,
+        });
+
+        logMessage(`You showed the ${cardToShow} card`, 'action');
+        hideSuggestionResponse();
+      }
+
+      function cannotDisprove() {
+        socket.emit('suggestion_response', {
+          suggestionId: currentSuggestion.id,
+          action: 'cannot_disprove',
+        });
+
+        logMessage('You cannot disprove this suggestion', 'action');
+        hideSuggestionResponse();
+      }
+
+      function hideSuggestionResponse() {
+        document.getElementById('suggestionResponse').style.display = 'none';
+        currentSuggestion = null;
+      }
+
+      // Initialize dropdowns on page load
+      window.addEventListener('load', () => {
+        populateAllDropdowns();
+        logMessage(
+          'ClueLess Demo ready - Click "Connect & Join" to begin',
+          'system'
+        );
+      });
+    </script>
+  </body>
+</html>
