@@ -984,6 +984,51 @@ class MinimalGame {
     });
   }
 
+  getRoomGrid() {
+    // Returns a 3x3 array of objects: { room, players: [character names] }
+    // Also includes hallways and players in them for full board visualization
+    const grid = [];
+    for (let i = 0; i < 3; i++) {
+      const row = [];
+      for (let j = 0; j < 3; j++) {
+        const roomName = this.boardLayout.rooms[i][j];
+        const playersInRoom = Array.from(this.players.values())
+          .filter(p => p.location === roomName && !p.isEliminated)
+          .map(p => p.character);
+        // Find adjacent hallways for this room
+        const hallways = [];
+        const directions = [
+          { dr: -1, dc: 0 }, // up
+          { dr: 1, dc: 0 },  // down
+          { dr: 0, dc: -1 }, // left
+          { dr: 0, dc: 1 },  // right
+        ];
+        directions.forEach(dir => {
+          const newRow = i + dir.dr;
+          const newCol = j + dir.dc;
+          if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
+            const adjacentRoom = this.boardLayout.rooms[newRow][newCol];
+            const hallway = `${roomName}-${adjacentRoom} Hallway`;
+            const hallwayReverse = `${adjacentRoom}-${roomName} Hallway`;
+            [hallway, hallwayReverse].forEach(hall => {
+              if (this.hallways.includes(hall)) {
+                const playersInHallway = Array.from(this.players.values())
+                  .filter(p => p.location === hall && !p.isEliminated)
+                  .map(p => p.character);
+                hallways.push({ name: hall, players: playersInHallway });
+              }
+            });
+          }
+        });
+        row.push({ room: roomName, players: playersInRoom, hallways });
+      }
+      grid.push(row);
+    }
+    // Also add any hallways not adjacent to rooms (if any)
+    // (For this board, all hallways are between rooms)
+    return grid;
+  }
+
   getPublicState() {
     const currentPlayer = this.players.get(this.currentTurn);
     const hostPlayer = this.players.get(this.hostId);
@@ -1018,6 +1063,7 @@ class MinimalGame {
         weapons: this.weapons,
         characters: this.characters,
       },
+      roomGrid: this.getRoomGrid(),
     };
   }
 }

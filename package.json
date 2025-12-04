@@ -4,8 +4,7 @@
   "description": "Skeletal increment demo",
   "main": "skeletal-server.js",
   "scripts": {
-    "demo": "node skeletal-server.js",
-    "start": "node skeletal-server.js"
+    "start": "node minimal-server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
